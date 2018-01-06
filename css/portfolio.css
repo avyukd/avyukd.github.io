@@ -1,0 +1,44 @@
+@font-face {
+   font-family: nunito;
+   src: url(nunito.ttf);
+}
+* {
+	font-family:nunito, Verdana;
+	border:10px;
+}
+
+
+.collapse{
+  margin-top:15px;
+  margin-bottom:15px;
+  cursor: pointer;
+  display: block;
+  font-size:48px;
+}
+
+.collapse + input[type="checkbox"]{
+  display: none; /* hide the checkboxes */
+}
+.collapse + input[type="checkbox"] + .content{
+  display:none;
+}
+.collapse + input[type="checkbox"]:checked + .content{
+  display:block;
+  background-color:white;
+}
+
+.outerb {
+	background-color:#a11313;
+	background-color: hsla(0, 88%, 65%, 1);
+	margin:30px;
+	text-align:center;
+}
+
+
+.content{
+	padding:20px;
+	text-align:left;
+	color:black;
+	font-size:14px;
+}
+
