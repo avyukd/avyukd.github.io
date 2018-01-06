@@ -1,0 +1,45 @@
+@font-face {
+   font-family: nunito;
+   src: url(nunito.ttf);
+}
+* {
+	font-family:nunito, Verdana;
+	border:10px;
+}
+
+h1{
+	font-size:50px;
+	text-align:center;
+	margin-bottom:25px;
+}
+img {
+	display: block;
+    margin: 0 auto;
+	width:20%;
+}
+
+section{
+	height:25%;
+	transform:translateY(10%);	
+}
+.header{
+	display:block;
+	padding:15px;
+	width:100%;
+}
+
+#about{
+	text-align:center;
+	margin-top:2%;
+	display:block;
+	position:relative;
+}
+
+.info{
+	color:#DFCFBE;
+	text-decoration:#BC243C;
+}
+
+#phone_number:hover, #fb:hover, #linkedin:hover, #email:hover{
+	color:blue;
+}

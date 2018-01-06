@@ -4,10 +4,10 @@
 		<!--<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
-		<title>Hi, I'm Avyuk</title>
+		<title>Contact Me</title>
 		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 		<link rel="stylesheet" type="text/css" href="css/component1.css" />
-		<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="css/contact.css" />
 		<script src="js/modernizr-2.6.2.min.js"></script>
 
 <!--<script type="text/javascript">
@@ -20,20 +20,25 @@ ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();
 </script>-->
-
+		<script>
+			$('p').hover(function(){
+				$('img').attr("src", "phone_icon.png");             
+			}, function(){
+				$('img').attr("src", "contact_default.png");             
+			});
+		</script>
 	</head>
 	<body background="redbg.png">
 		<div class="container">
 			<section>
 				<div background="orangehead.jpg" class="header">
-					<h1 align="center">Hi, I'm Avyuk</h1>
-					<img src="pfp.jpg" style="border-radius:50%"></img>
+					<h1 align="center">Contact Me</h1>
+					<img src="contact_default.png" style="border-radius:50%"></img>
 				</div>
 				<div id="about">
-					<p>I am a tenth grader at Thomas Jefferson High School for Science and Technology who loves to code and solve problems.</p>
-					<p>For fun, I like to debate, play basketball, travel, and give back to my community. Additionally, I run my own company,</p>
-					<p>Linkpedia, have conducted cybersecurity research with professors from around the world, interned with a tech startup,</p>
-					<p>and much more. Click on the plus button below to view my portfolio, resume, github, or to contact me. Thanks for visiting!</p>
+					<p>Call or message me at <span style="display:inline" class="info" id="phone_number">703-559-2375.</span></p><p>Contact me on linkedin at <a style="display:inline" href="https://www.linkedin.com/in/avyukdixit" class="info" id="linkedin">https://www.linkedin.com/in/avyukdixit </a></p>
+					<p>Email me at <span style="display:inline" class="info" id ="email">2020adixit@tjhsst.edu</span> or <span style="display:inline" class="info" id="email">avyukd@linkpedia.co</span>
+					<p>Find me on facebook at <a style="display:inline" href= "https://www.facebook.com/avyuk.dixit" class="info" id="fb">https://www.facebook.com/avyuk.dixit</a></p>
 				</div>
 			</section>
 			<div class="component">
