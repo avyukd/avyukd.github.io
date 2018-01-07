@@ -13,7 +13,7 @@
   margin-bottom:15px;
   cursor: pointer;
   display: block;
-  font-size:48px;
+  font-size:40px;
 }
 
 .collapse + input[type="checkbox"]{
@@ -39,6 +39,6 @@
 	padding:20px;
 	text-align:left;
 	color:black;
-	font-size:14px;
+	font-size:18px;
 }
 
