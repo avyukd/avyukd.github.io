@@ -27,11 +27,18 @@ h2 {
     font-size: 2em;
     font-family:'Helvetica', 'Arial', 'Sans-Serif';
 }
-p, ul, li {
+p {
     font-size: 1.5em;
     line-height: 1.4em;
     color: #333;
 }
+
+.post ul, .post ol, .post li {
+    font-size: 1.5em;
+    line-height: 1.4em;
+    color: #333;
+}
+
 footer {
     border-top: 1px solid #d5d5d5;
     font-size: .8em;
