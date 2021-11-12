@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Memo 1 - My Investing Framework, a Bifurcated Market, and Uranium"
+title: "My Investing Framework, a Bifurcated Market, and Uranium"
 date: 2021-08-09
 ---
 Sometime ago, I started writing investing memos. These are unedited, almost "stream of conciousness" like pieces that help me gain clarity on the market, strategy, positions, etc. I write these when I'm overwhelmed with thoughts and need a place to spill them over into. The memos also serve as documentation of my investing journey and a place to look back to when I think "what was I thinking 5 years ago when I made that trade?" Below is the first memo I wrote back in August. Again, it's unedited and might be poor quality so sorry for that in advance.
