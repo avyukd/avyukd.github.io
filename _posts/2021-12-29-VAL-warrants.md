@@ -13,7 +13,7 @@ Upon emerging from bankruptcy sometime ago, Valaris issued April 29th, 2028, war
 
 First question: What implied volatility does the current warrant price suggest?
 
-![IV on VAL warrants](../files/val_warrants.png)
+![IV on VAL warrants](https://avyukd.github.io/files/val_warrants.png)
  
 The current warrant price suggests around 40% implied volatility. Though implied volatility is hard to interpret in a vacuum, this seems pretty low – investors aren’t expecting a big move in Valaris. 
 
@@ -29,6 +29,6 @@ Obviously, VAL being a 10-bagger is a big assumption, but the fact that these wa
 
 What should the warrant price look like in other scenarios? I tried to estimate them in the matrix below (volatility vs underlying price). 
 
-![warrant pricing matrix](../files/warrant_matrix.png)
+![warrant pricing matrix](https://avyukd.github.io/files/warrant_matrix.png)
 
 Unbelievable numbers. I just opened up an IBKR account today and will be buying these warrants ASAP. As I start catching up on oil macro and going deep on the VAL thesis, I’ll likely continue averaging in. The risk/reward here is simply too large to miss out on. 
