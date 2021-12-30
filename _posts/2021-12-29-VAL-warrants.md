@@ -29,6 +29,6 @@ Obviously, VAL being a 10-bagger is a big assumption, but the fact that these wa
 
 What should the warrant price look like in other scenarios? I tried to estimate them in the matrix below (volatility vs underlying price). 
 
-![warrant pricing matrix](https://avyukd.github.io/files/warrant_matrix.png)
+<img src="https://avyukd.github.io/files/warrant_matrix.png" alt="warrant pricing matrix" width="500"/>
 
 Unbelievable numbers. I just opened up an IBKR account today and will be buying these warrants ASAP. As I start catching up on oil macro and going deep on the VAL thesis, I’ll likely continue averaging in. The risk/reward here is simply too large to miss out on. 
