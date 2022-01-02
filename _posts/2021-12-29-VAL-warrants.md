@@ -5,7 +5,7 @@ date: 2021-12-29
 ---
 Valaris (VAL) is an offshore drilling company that owns a bunch of oil rigs and equipment which it contracts out to producers. The VAL thesis has been talked about for a while and is pretty simple: VAL trades at a deep discount to replacement value, that value will be realized as offshore oil becomes relevant again because of growing oil market tightness. Yet among those who are long oil, there is debate over whether offshore will actually become relevant again or not – why venture offshore when there’s tons of oil onshore? I never got into the weeds of this debate because it seemed hard to quantitatively resolve, and that was basically the extent of my research on VAL.  
 
-But then yesterday, I was scrolling through twitter and stumbled across this <a href="https://twitter.com/intothegossan/status/1475880916052414466">tweet</a> claiming VAL warrants could 100x. I initially scoffed at this and wrote it off as ridiculous – then I thought I’ve heard about VAL from some smart people and the underlying thesis is legit, so why don’t I do some more research.
+But then yesterday, I was scrolling through twitter and stumbled across this <a href="https://twitter.com/intothegossan/status/1475880916052414466">tweet</a> claiming VAL warrants could 100x. I initially wrote this off as ridiculous – then I thought I’ve heard about VAL from some smart people and the underlying thesis is legit, so why don’t I do some more research.
 
 Disclaimer: I’m a complete warrants and options beginner so all the forthcoming analysis is likely flawed – do your own research. 
 
@@ -23,7 +23,7 @@ The clear explanation for this IV gap is low volume. Valaris warrants have an av
 
 Back to the original question: can these warrants 100x? 
 
-Before we start dealing with IV, let’s just build some intuition. Say Valaris trades at a peak of 2x replacement value (offshore drillers did this last cycle). This means Valaris hits a market cap of $30B which means its share price 10x’s from ~$36 to ~$360. Warrants are now ITM: $360 – $138.88 = $221.12, warrants must cost at least $221.12 which is a 70x from their current price – unbelievable. Factor in IV spike and some additional premium from increased demand (not sure if that’s priced in or not – as I said, options beginner), 100x suddenly seems realistic. 
+Before we start dealing with IV, let’s just build some intuition. Say Valaris trades at a peak of 2x replacement value (offshore drillers did this last cycle). This means Valaris hits a market cap of $30B which means its share price 10x’s from ~$36 to ~$360. Warrants are now ITM: $360 – $138.88 = $221.12, warrants must cost at least $221.12 which is a 70x from their current price. Factor in IV spike and some additional premium from increased demand (not sure if that’s priced in or not – as I said, options beginner), 100x suddenly seems realistic. 
 
 Obviously, VAL being a 10-bagger is a big assumption, but the fact that these warrants even have the potential to 100x is amazing – there’s very few opportunities out there like that. 
 
@@ -31,4 +31,4 @@ What should the warrant price look like in other scenarios? I tried to estimate 
 
 <img src="https://avyukd.github.io/files/warrant_matrix.png" alt="warrant pricing matrix" width="500"/>
 
-Unbelievable numbers. I just opened up an IBKR account today and will be buying these warrants ASAP. As I start catching up on oil macro and going deep on the VAL thesis, I’ll likely continue averaging in. The risk/reward here is simply too large to miss out on. 
+I haven't factored in time decay here, but nonetheless these seem like great numbers. I just opened up an IBKR account today and will be buying these warrants ASAP. As I start catching up on oil macro and going deep on the VAL thesis, I’ll likely continue averaging in. 
