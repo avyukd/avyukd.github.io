@@ -9,7 +9,7 @@ Suppose we have independently chosen vectors $$ x_1,\dots,x_n \in \mathbb{R}^d $
 
 First, $$\mathbb{E}[\langle Ax_i, Ax_j \rangle] = \mathbb{E}[(Ax_j)^TAx_i] = \mathbb{E}[x_j^TA^TAx_i] = x_j^T\mathbb{E}[A^TA]x_i$$. Now, I will show that $$\mathbb{E}[A^TA] = \mathbb{I}_d$$
 
-$$\[
+$$
 A^TA = \begin{bmatrix} 
     a_{11} & \dots & a_{d^\prime1} \\
     \vdots & \ddots & \\
@@ -20,5 +20,5 @@ A^TA = \begin{bmatrix}
     \vdots & \ddots & \\
     a_{d^\prime1} & \dots & a_{d^\prime d} 
     \end{bmatrix}
-\]$$
+$$
 
