@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Reflections on Investing"
-date: 2022-04-30
+date: 2022-04-29
 ---
 In my first investing memo, I wrote I’m going to be a long-term contrarian value investor. But in less than a year, I’ve taken profits and cut losses on multiple positions, traded short-term options, and entered new trades with less than long-term timeframes. In some way, I’ve violated every adjective I put before “investor” by making short-term, consensus, and poor risk/reward decisions. Some reflection:
 
