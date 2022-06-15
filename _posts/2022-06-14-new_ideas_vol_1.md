@@ -17,9 +17,7 @@ APRN also has $25m in net cash. Put these figures together and the liquidation v
 
 ### Right Tail
 Downside protection established, let's talk about upside potential. I am highly skeptical the following scenarios play out, but if you can get them for free, why not take a position? 
-
 1. Joe Sanberg pulls off a miracle. Blue Apron is Joe Sanberg's *personal passion project*. He has injected tons of capital into the company and believes Blue Apron is a $100+ stock. Recently did a raise at $12/share (Blue Apron shares were trading at $3-4 at the time). Note Sanberg backstopping APRN is another form of downside protection. If Sanberg can shift sentiment on APRN and clear a path forward, it could catalyze a multiple re-rate (APRN is heavily discounted vs peers like Hello Fresh).
-
 2. Food inflation. Interesting thesis point borrowed from Citron research - grocery stores are 3-4 steps separated from producers where as APRN sources direct - means their prices are cheaper. If food prices start getting crazy (which I believe they likely could), could it lead to a resurgence in meal kits? Why buy expensive groceries when you can get legit meals *for cheaper* delivered to your door? 
 
 
@@ -62,11 +60,8 @@ I think it's likely they get bought -- expect a wave of consolidation across the
 
 ### Thesis
 VTNR purchased the Mobile refinery from Shell in a forced sale for $75m. The refinery has capacity of 75,000 bpd. Using a $20,000-25,000/barrel price, the refinery is worth somewhere between $1.5-2B. VTNR's current market cap is $1B and it is net cash. Mobile + clean B/S provides decent downside protection.
-
 1. Refineries are scarce assets. Refineries are already running at ATH utilization rates. Nobody wants to build them because of ESG and reopening refineries is a complex process -- supply constraints will likely continue while demand stays steady absent a recession. ESG induced supply deficits: this is the 2020's playbook. 
-
 2. VTNR trades at a cheap multiple relative to other refiners - 3-4x earnings vs 8-10x for most competitors. Multiple re-rate implies an immediate 2-3x bagger. 
-
 3. With crack spreads at ATHs, VTNR is printing cash. FCF yield of 25-30+%. Valuation model assumes crack spreads stay high but start dropping through end of 2023, then revert immediately to 5-yr trailing average. *This isn't a directional bet on crack spreads*
 
 ### Risks
