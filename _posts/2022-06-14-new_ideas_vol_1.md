@@ -3,10 +3,10 @@ layout: post
 title: "New Ideas Vol. 1 - APRN, DO, VTNR"
 date: 2022-06-14
 ---
-# Summary
+## Summary
 APRN, DO, VTNR are all interesting ideas. Looking to buy APRN if it falls to $1-2 range -- sufficiently compelling price vs net liquidation value at that point. DO, based on my model, is surprisingly cheap and has a quality fleet of drillships and semisubs. Don't like that their backlog rolls off late 2023 though. Small position to hedge diluted VAL jackup fleet makes sense to me (like it better than RIG which is a zero if wrong). Small position in VTNR but looking to expand if it falls to $5-10 range (unlikely tbh). Pretty much a special sit with super lucky Mobile acquisition. Not asymmetric at $15-20 imo. 
 
-# APRN - Blue Apron Holdings
+## APRN - Blue Apron Holdings
 
 ### Thesis
 Blue Apron is a POS company. To borrow from the KEDM discord, APRN nukes capital. They are a capital destruction machine. That said, any asset is a buy if the price is compelling enough. 
@@ -31,7 +31,9 @@ You cannot trust this company on fundamentals. You cannot trust them to allocate
 ### Useful Sources
 - [Citron Research Long Thesis](https://citronresearch.com/wp-content/uploads/2022/01/Blue-Apron-The-Answer-to-Food-Inflation.pdf)
 - [Blue Duck Long Thesis](https://discord.com/channels/827214080317325332/860256308615970846/960563461308416074)
-- [APRN Investor Day Presentation](https://investors.blueapron.com/~/media/Files/B/BlueApron-IR/reports-and-presentations/blue-apron-investor-day-2022-slide-presentation_0.pdf)# DO - Diamond Offshore
+- [APRN Investor Day Presentation](https://investors.blueapron.com/~/media/Files/B/BlueApron-IR/reports-and-presentations/blue-apron-investor-day-2022-slide-presentation_0.pdf)
+
+## DO - Diamond Offshore
 
 ### Thesis
 DO should benefit from rising floater day rates and inflection in offshore. They own 4 drillships, 9 semisubs (3 are cold-stacked) and have about ~200m in net debt.  
@@ -56,7 +58,7 @@ I think it's likely they get bought -- expect a wave of consolidation across the
 2. [Seeking Alpha Writeup](https://seekingalpha.com/article/4498851-diamond-offshore-drilling-strong-buy-discounted-valuation-buyout-potential)
 3. [Fleet Report](http://www.diamondoffshore.com/fleet-overview)
 
-# VTNR - Vertex Energy
+## VTNR - Vertex Energy
 
 ### Thesis
 VTNR purchased the Mobile refinery from Shell in a forced sale for $75m. The refinery has capacity of 75,000 bpd. Using a $20,000-25,000/barrel price, the refinery is worth somewhere between $1.5-2B. VTNR's current market cap is $1B and it is net cash. Mobile + clean B/S provides decent downside protection.
