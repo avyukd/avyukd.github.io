@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "New Ideas Vol. 1 - APRN, DO, VTNR"
+title: "APRN, DO, VTNR"
 date: 2022-06-14
 ---
 ## Summary
