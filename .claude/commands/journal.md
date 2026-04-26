@@ -1,6 +1,5 @@
 ---
-name: journal
-description: Use when the user wants to write today's journal entry. Reads recent entries and the topic vocabulary, drafts an entry from the user's raw thoughts, suggests new topic stubs, writes files, and commits.
+description: Compose today's journal entry — reads recent entries and topics, drafts from raw input, writes and commits.
 ---
 
 # /journal — Daily journal authoring
