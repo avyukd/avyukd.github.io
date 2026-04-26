@@ -42,7 +42,10 @@ export const defaultContentPageLayout: PageLayout = {
     Component.Explorer(),
   ],
   right: [
-    Component.Graph(),
+    Component.Graph({
+      localGraph: { depth: 2, drag: true, zoom: true },
+      globalGraph: { drag: true, zoom: true, depth: -1 },
+    }),
     Component.DesktopOnly(Component.TableOfContents()),
     Component.Backlinks(),
   ],
