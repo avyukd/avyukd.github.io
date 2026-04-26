@@ -4,9 +4,9 @@
 
 **Goal:** Replace the existing Jekyll site at `avyukd.github.io` with a Quartz v4 knowledge garden featuring a graph-dominant landing page, a date-picker for navigating daily journal entries, custom emitters for date indexing, and a `/journal` slash command for daily authoring. Bootstrap the vault with the 13 legacy root markdown posts, enriched (tags, summaries, wikilinks, topic stubs) by a one-shot Claude-powered script.
 
-**Architecture:** Vendor Quartz v4 into the repo, add three custom pieces (a `JournalIndex` emitter, a `Calendar` component, an index-page layout that pins the global graph). The bootstrap enrichment runs in two passes (single-doc tagging, then cross-link insertion) using the Anthropic SDK with prompt caching. Deploy via GitHub Actions to GitHub Pages.
+**Architecture:** Vendor Quartz v4 into the repo, add three custom pieces (a `JournalIndex` emitter, a `Calendar` component, an index-page layout that pins the global graph). The bootstrap enrichment is performed directly by a dispatched Claude subagent (not an SDK-driven script) — the subagent reads the 13 legacy posts, picks tags/topics in pass 1, then inserts wikilinks in pass 2, and writes the outputs. Deploy via GitHub Actions to GitHub Pages.
 
-**Tech Stack:** Quartz v4, Preact, TypeScript, Bun, unified.js (remark/rehype), Anthropic SDK (Claude Opus 4.7), GitHub Actions, GitHub Pages.
+**Tech Stack:** Quartz v4, Preact, TypeScript, Bun, unified.js (remark/rehype), GitHub Actions, GitHub Pages. (No Anthropic SDK — enrichment is one-shot, performed inline by a Claude subagent during plan execution.)
 
 **Working directory:** `/home/avyuk/dev/avyukd.github.io` (already a git repo with the legacy Jekyll site checked in on `main`).
 
@@ -171,567 +171,15 @@ git commit -m "chore: add bun-friendly build/dev scripts" || echo "no changes"
 
 ---
 
-## Task 4: Set up enrichment script harness
+## Task 4: Enrich the 13 legacy posts via dispatched subagent
 
-Create the directory structure and shared types for the bootstrap enrichment script. Add `@anthropic-ai/sdk` to dependencies. Write the entrypoint stub so subsequent tasks have a place to plug into.
-
-**Files:**
-- Create: `scripts/enrich-legacy.ts`
-- Create: `scripts/types.ts`
-- Modify: `package.json` (add dependency, add npm script)
-
-- [ ] **Step 1: Add the Anthropic SDK**
-
-```bash
-bun add @anthropic-ai/sdk
-bun add -d @types/node
-```
-
-- [ ] **Step 2: Create shared types**
-
-Write `scripts/types.ts`:
-
-```typescript
-export type LegacyPost = {
-  filename: string;       // e.g. "2021-08-09-a-bifurcated-market.md"
-  date: string;           // ISO date "YYYY-MM-DD"
-  title: string;          // human-readable title
-  body: string;           // raw markdown body (no frontmatter)
-};
-
-export type Pass1Output = {
-  tags: string[];         // 3-7 tags
-  summary: string;        // one-line description
-  topics: string[];       // candidate topic-note slugs (kebab-case)
-};
-
-export type EnrichedPost = {
-  filename: string;       // output filename (same as legacy)
-  date: string;
-  title: string;
-  tags: string[];
-  summary: string;
-  body: string;           // body with [[wikilinks]] inserted
-};
-
-export type TopicStub = {
-  slug: string;           // kebab-case
-  title: string;          // human-readable
-  parentTags: string[];   // inferred parent tags (intersection of mentioning posts' tags)
-};
-```
-
-- [ ] **Step 3: Create the script entrypoint stub**
-
-Write `scripts/enrich-legacy.ts`:
-
-```typescript
-#!/usr/bin/env bun
-/**
- * One-shot enrichment of the 13 legacy posts.
- * Produces:
- *   content/posts/legacy/<original-filename>.md
- *   content/topics/<slug>.md
- *
- * Re-running overwrites both directories — not designed to be incremental.
- */
-import Anthropic from "@anthropic-ai/sdk";
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
-
-const LEGACY_SOURCE = process.env.LEGACY_SOURCE_DIR ?? "/tmp/legacy-posts";
-const OUT_POSTS = "content/posts/legacy";
-const OUT_TOPICS = "content/topics";
-const MODEL = "claude-opus-4-7";
-
-async function main() {
-  console.log("Enrichment script — not yet implemented");
-}
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-```
-
-- [ ] **Step 4: Add the npm script**
-
-In `package.json`, add to `"scripts"`:
-```json
-"enrich": "bun run scripts/enrich-legacy.ts"
-```
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add scripts/ package.json bun.lockb
-git commit -m "feat(enrich): scaffold enrichment script and types"
-```
-
----
-
-## Task 5: Implement Pass 1 — single-doc enrichment
-
-Take a `LegacyPost` and call Claude to produce tags, summary, and candidate topics. Use structured output via the SDK's tool-calling feature. Write a unit test against a fixture.
+**Approach change vs. earlier draft:** there is no SDK-driven script and no `ANTHROPIC_API_KEY`. The enrichment is performed in-session by a fresh Claude subagent dispatched via the Agent tool. The subagent reads the 13 legacy posts from the `pre-quartz` git tag, performs the two-pass enrichment in its head, and writes the outputs directly. No external script artifacts remain in the repo afterward.
 
 **Files:**
-- Create: `scripts/pass1.ts`
-- Create: `scripts/pass1.test.ts`
-- Create: `scripts/fixtures/sample-post.md`
+- Create: `content/posts/legacy/<original-filename>.md` (one per legacy post — written by the subagent)
+- Create: `content/topics/<slug>.md` (one per concept identified by the subagent — written by the subagent)
 
-- [ ] **Step 1: Create a fixture**
-
-Write `scripts/fixtures/sample-post.md` (a small synthetic post used only for tests):
-
-```markdown
-# Notes on Uranium
-
-The uranium market has been compressed for over a decade. Major producers
-like Cameco and Kazatomprom have curtailed production. The supply deficit
-is structural, and as utilities resume long-term contracting, prices should
-re-rate. I've been holding URNM for two years.
-```
-
-- [ ] **Step 2: Write the failing test**
-
-Write `scripts/pass1.test.ts`:
-
-```typescript
-import { describe, it, expect } from "bun:test";
-import { readFile } from "node:fs/promises";
-import { runPass1 } from "./pass1";
-
-describe("runPass1", () => {
-  it("returns tags, summary, and topics from a sample post", async () => {
-    const body = await readFile("scripts/fixtures/sample-post.md", "utf8");
-    const result = await runPass1({
-      filename: "2024-01-01-uranium.md",
-      date: "2024-01-01",
-      title: "Notes on Uranium",
-      body,
-    });
-
-    expect(result.tags.length).toBeGreaterThanOrEqual(3);
-    expect(result.tags.length).toBeLessThanOrEqual(7);
-    expect(result.summary.length).toBeGreaterThan(0);
-    expect(result.summary.length).toBeLessThan(200);
-    expect(result.topics).toContain("uranium");
-  }, 60_000);
-});
-```
-
-- [ ] **Step 3: Run test to verify it fails**
-
-```bash
-bun test scripts/pass1.test.ts
-```
-Expected: FAIL with "Cannot find module ./pass1" or similar.
-
-- [ ] **Step 4: Implement Pass 1**
-
-Write `scripts/pass1.ts`:
-
-```typescript
-import Anthropic from "@anthropic-ai/sdk";
-import type { LegacyPost, Pass1Output } from "./types";
-
-const MODEL = "claude-opus-4-7";
-
-const SYSTEM = `You are an editorial assistant analyzing a personal blog post.
-Your job is to extract metadata that will be used to wire the post into a knowledge graph.
-
-For each post you receive:
-1. Pick 3-7 tags. Tags are flat, lowercase-kebab-case categories. Reuse existing tags when possible (you'll be told which exist).
-2. Write a one-line summary, max 200 chars, no period at the end. Should describe the post's argument/content concretely.
-3. List candidate topic notes — specific entities (companies, people, concepts, securities) the post discusses that deserve their own node in the graph. Use kebab-case slugs. Examples: "uranium", "palantir", "val-warrants", "intrinsic-value". Avoid overly generic concepts like "investing" or "writing" — those are tags, not topics.
-
-Be conservative on topics — only list things the post is materially about, not passing references.`;
-
-export async function runPass1(post: LegacyPost, existingTags: string[] = []): Promise<Pass1Output> {
-  const client = new Anthropic();
-  const userPrompt = `Existing tag vocabulary (reuse when applicable): ${existingTags.length ? existingTags.join(", ") : "(none yet)"}
-
-Post title: ${post.title}
-Post date: ${post.date}
-
-Post body:
----
-${post.body}
----
-
-Return your analysis using the provided tool.`;
-
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 1024,
-    system: SYSTEM,
-    tools: [
-      {
-        name: "submit_metadata",
-        description: "Submit the extracted tags, summary, and topics for this post.",
-        input_schema: {
-          type: "object",
-          properties: {
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              minItems: 3,
-              maxItems: 7,
-            },
-            summary: { type: "string" },
-            topics: { type: "array", items: { type: "string" } },
-          },
-          required: ["tags", "summary", "topics"],
-        },
-      },
-    ],
-    tool_choice: { type: "tool", name: "submit_metadata" },
-    messages: [{ role: "user", content: userPrompt }],
-  });
-
-  const toolUse = response.content.find((b) => b.type === "tool_use");
-  if (!toolUse || toolUse.type !== "tool_use") {
-    throw new Error("Pass 1: Claude did not return a tool_use block");
-  }
-  return toolUse.input as Pass1Output;
-}
-```
-
-- [ ] **Step 5: Run test to verify it passes**
-
-```bash
-ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY bun test scripts/pass1.test.ts
-```
-Expected: PASS within 60 seconds. The user's `ANTHROPIC_API_KEY` must be set in the shell.
-
-If the test fails because of an API issue (rate limit, auth), surface the error to the user before proceeding.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add scripts/pass1.ts scripts/pass1.test.ts scripts/fixtures/
-git commit -m "feat(enrich): pass 1 — single-doc tag/summary/topic extraction"
-```
-
----
-
-## Task 6: Implement Pass 2 — cross-link insertion
-
-Given a post body and the full set of topic slugs (collected from Pass 1 across all posts), call Claude to insert `[[topic-slug]]` wikilinks at appropriate first mentions.
-
-**Files:**
-- Create: `scripts/pass2.ts`
-- Create: `scripts/pass2.test.ts`
-
-- [ ] **Step 1: Write the failing test**
-
-Write `scripts/pass2.test.ts`:
-
-```typescript
-import { describe, it, expect } from "bun:test";
-import { runPass2 } from "./pass2";
-
-describe("runPass2", () => {
-  it("inserts wikilinks for known topics on first mention", async () => {
-    const body = `The uranium market is interesting. I've been holding URNM
-for two years. Cameco's production cuts have been the structural driver.`;
-
-    const topics = ["uranium", "cameco", "urnm"];
-    const result = await runPass2(body, topics);
-
-    expect(result).toContain("[[uranium]]");
-    expect(result).toContain("[[cameco]]");
-    expect(result).toContain("[[urnm]]");
-  }, 60_000);
-
-  it("preserves prose structure (paragraph count unchanged)", async () => {
-    const body = `Para one with uranium.\n\nPara two with cameco.\n\nPara three.`;
-    const result = await runPass2(body, ["uranium", "cameco"]);
-    const beforeParas = body.split(/\n\n+/).length;
-    const afterParas = result.split(/\n\n+/).length;
-    expect(afterParas).toBe(beforeParas);
-  }, 60_000);
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-```bash
-bun test scripts/pass2.test.ts
-```
-Expected: FAIL with module-not-found.
-
-- [ ] **Step 3: Implement Pass 2**
-
-Write `scripts/pass2.ts`:
-
-```typescript
-import Anthropic from "@anthropic-ai/sdk";
-
-const MODEL = "claude-opus-4-7";
-
-const SYSTEM = `You are inserting wikilinks into a markdown post for an Obsidian-style knowledge graph.
-
-Rules:
-1. Only link to topic slugs from the provided list. Never invent new ones.
-2. Link only the FIRST mention of each topic in the post. Subsequent mentions stay plain text.
-3. Use the syntax [[slug]] or [[slug|display text]]. Use the second form only when the prose word differs from the slug (e.g. "Cameco" → [[cameco|Cameco]]).
-4. Do NOT modify the prose otherwise. Preserve paragraph breaks, formatting, headings, code blocks, lists, and the author's voice exactly.
-5. Do NOT insert links inside code blocks, links, or existing wikilinks.
-6. If a topic from the list is not actually mentioned in the post, do not invent a mention for it — just leave it unlinked.
-
-Return only the rewritten markdown body. No commentary, no fences, no preamble.`;
-
-export async function runPass2(body: string, topics: string[]): Promise<string> {
-  const client = new Anthropic();
-  const userPrompt = `Topic slugs available for linking:
-${topics.map((t) => `- ${t}`).join("\n")}
-
-Markdown body:
----
-${body}
----
-
-Return the rewritten body with wikilinks inserted at first mentions.`;
-
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 8192,
-    system: SYSTEM,
-    messages: [{ role: "user", content: userPrompt }],
-  });
-
-  const text = response.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") {
-    throw new Error("Pass 2: Claude did not return a text block");
-  }
-  return text.text.trim();
-}
-```
-
-- [ ] **Step 4: Run tests to verify pass**
-
-```bash
-ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY bun test scripts/pass2.test.ts
-```
-Expected: both tests PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add scripts/pass2.ts scripts/pass2.test.ts
-git commit -m "feat(enrich): pass 2 — cross-link wikilink insertion"
-```
-
----
-
-## Task 7: Wire up the enrichment orchestrator
-
-Replace the stub in `enrich-legacy.ts` with the real pipeline: read every `.md` file in the source directory, run Pass 1 on each (accumulating the tag vocabulary and topic set as it goes), then run Pass 2 on each with the global topic list, then write outputs.
-
-**Files:**
-- Modify: `scripts/enrich-legacy.ts`
-
-- [ ] **Step 1: Write helper utilities inline in enrich-legacy.ts**
-
-Replace the contents of `scripts/enrich-legacy.ts`:
-
-```typescript
-#!/usr/bin/env bun
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, basename } from "node:path";
-import type { LegacyPost, EnrichedPost, TopicStub } from "./types";
-import { runPass1 } from "./pass1";
-import { runPass2 } from "./pass2";
-
-const LEGACY_SOURCE = process.env.LEGACY_SOURCE_DIR ?? "/tmp/legacy-posts";
-const OUT_POSTS = "content/posts/legacy";
-const OUT_TOPICS = "content/topics";
-
-const FILENAME_RE = /^(\d{4}-\d{2}-\d{2})-(.+)\.md$/;
-
-function parseFilename(filename: string): { date: string; titleSlug: string } | null {
-  const m = FILENAME_RE.exec(filename);
-  if (!m) return null;
-  return { date: m[1], titleSlug: m[2] };
-}
-
-function slugToTitle(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => (w.length <= 3 && w.toUpperCase() === w ? w : w[0].toUpperCase() + w.slice(1).toLowerCase()))
-    .join(" ");
-}
-
-function stripFrontmatter(body: string): string {
-  if (!body.startsWith("---")) return body;
-  const end = body.indexOf("\n---", 3);
-  if (end === -1) return body;
-  return body.slice(end + 4).replace(/^\n+/, "");
-}
-
-function renderFrontmatter(post: EnrichedPost): string {
-  const tags = post.tags.map((t) => `  - ${t}`).join("\n");
-  return `---
-title: ${JSON.stringify(post.title)}
-date: ${post.date}
-type: post
-tags:
-${tags}
-summary: ${JSON.stringify(post.summary)}
----
-`;
-}
-
-function renderTopic(topic: TopicStub): string {
-  const tags = topic.parentTags.map((t) => `  - ${t}`).join("\n");
-  return `---
-title: ${JSON.stringify(topic.title)}
-type: topic
-tags:
-${tags}
----
-
-`;
-}
-
-async function loadLegacy(): Promise<LegacyPost[]> {
-  const files = await readdir(LEGACY_SOURCE);
-  const mds = files.filter((f) => f.endsWith(".md"));
-  const out: LegacyPost[] = [];
-  for (const f of mds) {
-    const parsed = parseFilename(f);
-    if (!parsed) {
-      console.warn(`Skipping unrecognized filename: ${f}`);
-      continue;
-    }
-    const raw = await readFile(join(LEGACY_SOURCE, f), "utf8");
-    out.push({
-      filename: f,
-      date: parsed.date,
-      title: slugToTitle(parsed.titleSlug),
-      body: stripFrontmatter(raw),
-    });
-  }
-  return out;
-}
-
-async function main() {
-  console.log(`Loading legacy posts from ${LEGACY_SOURCE}...`);
-  const posts = await loadLegacy();
-  console.log(`Loaded ${posts.length} posts.`);
-
-  // ----- Pass 1: per-doc enrichment -----
-  console.log("\n=== Pass 1: extracting tags/summary/topics ===");
-  const tagVocab = new Set<string>();
-  const topicMentions = new Map<string, Set<string>>(); // slug → posts that mention it
-  const pass1Results = new Map<string, { tags: string[]; summary: string; topics: string[] }>();
-
-  for (const post of posts) {
-    process.stdout.write(`  ${post.filename}... `);
-    const meta = await runPass1(post, [...tagVocab]);
-    pass1Results.set(post.filename, meta);
-    meta.tags.forEach((t) => tagVocab.add(t));
-    meta.topics.forEach((slug) => {
-      if (!topicMentions.has(slug)) topicMentions.set(slug, new Set());
-      topicMentions.get(slug)!.add(post.filename);
-    });
-    console.log(`tags=${meta.tags.length} topics=${meta.topics.length}`);
-  }
-
-  console.log(`\nTag vocab (${tagVocab.size}): ${[...tagVocab].join(", ")}`);
-  console.log(`Topic candidates (${topicMentions.size}): ${[...topicMentions.keys()].join(", ")}`);
-
-  // ----- Pass 2: cross-link insertion -----
-  console.log("\n=== Pass 2: inserting wikilinks ===");
-  const allTopics = [...topicMentions.keys()];
-  const enriched: EnrichedPost[] = [];
-
-  for (const post of posts) {
-    process.stdout.write(`  ${post.filename}... `);
-    const meta = pass1Results.get(post.filename)!;
-    const linked = await runPass2(post.body, allTopics);
-    enriched.push({
-      filename: post.filename,
-      date: post.date,
-      title: post.title,
-      tags: meta.tags,
-      summary: meta.summary,
-      body: linked,
-    });
-    console.log("done");
-  }
-
-  // ----- Emit posts -----
-  await mkdir(OUT_POSTS, { recursive: true });
-  for (const e of enriched) {
-    const fm = renderFrontmatter(e);
-    await writeFile(join(OUT_POSTS, e.filename), fm + "\n" + e.body + "\n");
-  }
-  console.log(`\nWrote ${enriched.length} posts to ${OUT_POSTS}/`);
-
-  // ----- Emit topic stubs -----
-  await mkdir(OUT_TOPICS, { recursive: true });
-  for (const [slug, mentioningFiles] of topicMentions) {
-    // Parent tags = intersection of tags from all posts mentioning this topic
-    const tagSets = [...mentioningFiles].map((fn) => new Set(pass1Results.get(fn)!.tags));
-    const intersection = tagSets.reduce<Set<string>>((acc, s) => {
-      if (acc === null) return s;
-      return new Set([...acc].filter((t) => s.has(t)));
-    }, null as unknown as Set<string>);
-    const parentTags = [...intersection].slice(0, 3);
-
-    const stub: TopicStub = {
-      slug,
-      title: slugToTitle(slug),
-      parentTags,
-    };
-    await writeFile(join(OUT_TOPICS, `${slug}.md`), renderTopic(stub));
-  }
-  console.log(`Wrote ${topicMentions.size} topic stubs to ${OUT_TOPICS}/`);
-}
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-```
-
-- [ ] **Step 2: Smoke-test the orchestrator on a single fake fixture**
-
-Create `/tmp/legacy-posts/2024-01-01-uranium-test.md` with the same content as `scripts/fixtures/sample-post.md`. Then:
-
-```bash
-mkdir -p /tmp/legacy-posts
-cp scripts/fixtures/sample-post.md /tmp/legacy-posts/2024-01-01-uranium-test.md
-ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY LEGACY_SOURCE_DIR=/tmp/legacy-posts bun run enrich
-```
-Expected: completes without error, produces `content/posts/legacy/2024-01-01-uranium-test.md` and at least one file under `content/topics/`. Inspect the output:
-```bash
-cat content/posts/legacy/2024-01-01-uranium-test.md
-ls content/topics/
-```
-
-- [ ] **Step 3: Clean up the smoke-test artifacts**
-
-```bash
-rm -rf /tmp/legacy-posts content/posts/legacy/* content/topics/*
-```
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add scripts/enrich-legacy.ts
-git commit -m "feat(enrich): two-pass orchestrator wiring"
-```
-
----
-
-## Task 8: Run enrichment on the 13 real legacy posts
-
-Stage the real legacy posts (they're at the `pre-quartz` tag), run the script, review output, commit.
-
-- [ ] **Step 1: Extract the 13 legacy posts from the pre-quartz tag**
+- [ ] **Step 1: Stage the 13 legacy posts**
 
 ```bash
 mkdir -p /tmp/legacy-posts-real
@@ -739,32 +187,101 @@ git ls-tree --name-only pre-quartz | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}-.*\.md
   git show "pre-quartz:$f" > "/tmp/legacy-posts-real/$f"
 done
 ls /tmp/legacy-posts-real/
-ls /tmp/legacy-posts-real/ | wc -l
 ```
-Expected: `13` (or `12` if you choose to exclude the `2023-02-29-cool-post.md` placeholder — it's only 185 bytes; review the listing and `rm` it from the staging dir if it's not real content).
+Expected: 13 files. The `2023-02-29-cool-post.md` file is only 185 bytes — review and `rm` it from the staging dir if it's clearly a placeholder.
 
-- [ ] **Step 2: Run enrichment**
+- [ ] **Step 2: Dispatch the enrichment subagent**
+
+Use the Agent tool (`subagent_type: general-purpose`) with the following self-contained prompt. The subagent has Read/Write/Bash tool access and operates in `/home/avyuk/dev/avyukd.github.io`.
+
+**Prompt to dispatch:**
+
+> You are enriching 12-13 legacy markdown blog posts to seed a Quartz-based knowledge graph. The posts are personal essays about investing, math, and philosophy from 2020-2023.
+>
+> **Inputs:**
+> - Source files: `/tmp/legacy-posts-real/*.md` (filenames: `YYYY-MM-DD-<title-slug>.md`).
+> - Each file is plain markdown, no frontmatter (or minimal frontmatter — strip and ignore if present).
+>
+> **Outputs to write:**
+> - `content/posts/legacy/<same-filename>.md` for each input — original body with wikilinks inserted, plus YAML frontmatter.
+> - `content/topics/<slug>.md` — one stub per concept you identify across all posts.
+>
+> **Two-pass procedure** (do this in your head, no script):
+>
+> **Pass 1 — for every post, decide:**
+> - 3-7 lowercase-kebab-case tags (flat categories, e.g. `investing`, `commodities`, `value-investing`, `meta`, `math`, `philosophy`). Reuse tags across posts when applicable. Keep the vocabulary small — aim for ~8-12 distinct tags total across all posts.
+> - A 1-line summary (max 200 chars, no trailing period) describing the post's argument concretely.
+> - A list of candidate topic-note slugs: specific entities discussed (companies like `palantir` `cameco`, securities like `val-warrants` `urnm`, named concepts like `intrinsic-value` `kelly-criterion` `objectivity`). DO NOT make topics for vague generic categories like "investing" or "writing" — those are tags. Topics should be things you'd want a dedicated graph node for.
+>
+> **Pass 2 — after collecting the global topic list:**
+> - For each post, rewrite the body to insert `[[topic-slug]]` or `[[topic-slug|display text]]` wikilinks at the FIRST mention of any topic. Subsequent mentions stay plain text. Preserve prose exactly — no rewriting, no copy-edits beyond fixing the markdown around the link insertion. Do not insert links inside code fences, headings, or existing links.
+>
+> **Frontmatter format** for posts:
+> ```yaml
+> ---
+> title: "Human Title (derived from filename slug — e.g. 'a-bifurcated-market' → 'A Bifurcated Market')"
+> date: YYYY-MM-DD
+> type: post
+> tags:
+>   - tag1
+>   - tag2
+> summary: "One-line summary."
+> ---
+> ```
+>
+> **Frontmatter format** for topic stubs:
+> ```yaml
+> ---
+> title: "Display Name (Title Case)"
+> type: topic
+> tags:
+>   - parent-tag1
+>   - parent-tag2
+> ---
+> ```
+> Topic stub bodies should be empty (one trailing newline). Parent tags = the most common 1-2 tags from posts that mention this topic.
+>
+> **Title-casing rule:** Acronyms in slugs (LEE, VAL, URNM) stay uppercase. Other words get title case. So `2021-12-29-VAL-warrants` → "VAL Warrants". `2021-12-27-LEE-part-1` → "LEE Part 1". `a-bifurcated-market` → "A Bifurcated Market".
+>
+> **Procedure:**
+> 1. List `/tmp/legacy-posts-real/` and read every `.md` file.
+> 2. For each, run pass 1 mentally. Keep a running aggregate: tag vocabulary (set), candidate topics (set), per-post `{tags, summary, topics}`.
+> 3. After all posts seen, freeze the global topic list. (Drop topics that appear in only one post if they seem too narrow — judgment call.)
+> 4. For each post, run pass 2: insert wikilinks for any topic from the global list mentioned in the body. Use `[[slug|display text]]` form when the prose word differs from the slug (e.g., "Cameco" → `[[cameco|Cameco]]`).
+> 5. Write `content/posts/legacy/<filename>.md` with frontmatter + linked body.
+> 6. Write `content/topics/<slug>.md` for every topic in the global list.
+>
+> **Constraints:**
+> - Preserve the user's voice and prose. Light copy-editing (typos) only if you're certain.
+> - Don't invent content. Don't add commentary. Don't summarize the post in the body.
+> - Don't link concepts that aren't actually discussed in the post.
+> - The `content/posts/legacy/` and `content/topics/` directories should already exist (from Task 2). Create them if not.
+>
+> When done, report:
+> - Number of posts written
+> - Final tag vocabulary
+> - Final topic list (with count of how many posts mention each)
+> - Any judgment calls you made (e.g., topics dropped, ambiguous title casing)
+
+The subagent runs in foreground; wait for its summary before proceeding.
+
+- [ ] **Step 3: Spot-check the outputs**
 
 ```bash
-ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY LEGACY_SOURCE_DIR=/tmp/legacy-posts-real bun run enrich 2>&1 | tee /tmp/enrich-log.txt
-```
-Expected: completes in 5–15 minutes, prints progress per post, no errors. Review `/tmp/enrich-log.txt` if anything looks off.
-
-- [ ] **Step 3: Spot-check outputs**
-
-```bash
-ls content/posts/legacy/
-ls content/topics/
+ls content/posts/legacy/ | wc -l
+ls content/topics/ | wc -l
 head -25 content/posts/legacy/2021-08-09-a-bifurcated-market.md
-cat content/topics/uranium.md 2>/dev/null || echo "no uranium topic emitted"
+ls content/topics/
+cat content/topics/uranium.md 2>/dev/null || echo "(no uranium topic)"
 ```
 
-Review:
-- Frontmatter looks right (date, tags, summary, type:post)
-- Wikilinks `[[...]]` appear in the body at sensible places
-- Topic stubs exist for the obvious entities (uranium, palantir, etc.)
+Verify:
+- Each post file has correct frontmatter (title, date, type:post, tags, summary).
+- Wikilinks `[[...]]` appear in the body at sensible places.
+- Topic stubs exist for the obvious entities and have correct frontmatter.
+- The number of posts matches what was staged (12 or 13).
 
-If something is clearly wrong (hallucinated topic that doesn't exist in the source, mangled prose, missing frontmatter), pause and report to the user. Otherwise proceed.
+If something is clearly wrong (mangled frontmatter, mass-rewritten prose, hallucinated topics), report to the user, surface the diff, and ask whether to re-dispatch the subagent with adjusted instructions before continuing.
 
 - [ ] **Step 4: Commit**
 
@@ -776,12 +293,10 @@ git commit -m "content: import 13 enriched legacy posts + topic stubs"
 - [ ] **Step 5: Clean up tmp**
 
 ```bash
-rm -rf /tmp/legacy-posts-real /tmp/enrich-log.txt
+rm -rf /tmp/legacy-posts-real
 ```
 
----
-
-## Task 9: Build and wire the JournalIndex emitter
+## Task 5: Build and wire the JournalIndex emitter
 
 A custom Quartz emitter that walks `content/journal/`, extracts dates, and writes `static/journal-index.json` for the `Calendar` component to fetch.
 
@@ -914,7 +429,7 @@ git commit -m "feat(quartz): JournalIndex emitter for date-picker data"
 
 ---
 
-## Task 10: Build the Calendar component
+## Task 6: Build the Calendar component
 
 A client-side calendar widget that fetches `journal-index.json`, highlights days with entries, and navigates to `/journal/YYYY-MM-DD` on click. Mounted in the page header.
 
@@ -1210,7 +725,7 @@ git commit -m "feat(quartz): Calendar component for journal date navigation"
 
 ---
 
-## Task 11: Graph-dominant landing layout
+## Task 7: Graph-dominant landing layout
 
 Replace the default rendering of `content/index.md` so the front page is the global graph filling most of the viewport, with a thin header and a one-line tagline.
 
@@ -1300,7 +815,7 @@ git commit -m "feat(quartz): graph-dominant landing page"
 
 ---
 
-## Task 12: Topic-page layout — local graph + backlinks
+## Task 8: Topic-page layout — local graph + backlinks
 
 Tune topic pages so each one shows a local graph (depth=2) and the backlinks list prominently. Quartz already supports both; this is a config tweak.
 
@@ -1348,7 +863,7 @@ git commit -m "feat(quartz): topic pages render depth-2 local graph"
 
 ---
 
-## Task 13: `/journal` slash command
+## Task 9: `/journal` slash command
 
 A Claude Code skill that drives the daily journal authoring workflow.
 
@@ -1463,7 +978,7 @@ git commit -m "feat(claude): /journal slash command for daily authoring"
 
 ---
 
-## Task 14: GitHub Actions deploy workflow
+## Task 10: GitHub Actions deploy workflow
 
 Set up CI to build the site on push to `main` and deploy to the `gh-pages` branch.
 
@@ -1548,7 +1063,7 @@ Expected: 200.
 
 ---
 
-## Task 15: README + final smoke test
+## Task 11: README + final smoke test
 
 Add a project README and run a final end-to-end smoke test against the live site.
 
@@ -1584,13 +1099,9 @@ bun run build # → public/
 
 See `docs/superpowers/specs/2026-04-26-knowledge-graph-design.md` for the design spec.
 
-## Re-running the legacy enrichment
+## Re-importing legacy content
 
-```bash
-ANTHROPIC_API_KEY=... LEGACY_SOURCE_DIR=/path/to/legacy bun run enrich
-```
-
-This overwrites `content/posts/legacy/` and `content/topics/`.
+The 13 enriched legacy posts and the topic stubs were generated once by a Claude subagent at bootstrap time. To redo the enrichment, dispatch a fresh subagent in Claude Code with the prompt in `docs/superpowers/plans/2026-04-26-knowledge-graph.md` (Task 4).
 ```
 
 - [ ] **Step 2: Commit and push**
@@ -1635,17 +1146,17 @@ If anything fails, surface the failure to the user with screenshots / specific U
 
 After all tasks complete, verify against the spec:
 
-- [ ] Spec §1 goal — graph is the front door: covered by Task 11.
-- [ ] Spec §2 non-goals — no Jekyll content remains: Task 1 wiped, Task 8 only imports legacy posts.
-- [ ] Spec §4 repo layout — matches: ✓ (verify with `tree -L 2 -I node_modules`).
-- [ ] Spec §5 content model — three types, frontmatter as specified: ✓ (Tasks 8, 13).
-- [ ] Spec §6.1 graph-dominant landing: Task 11.
-- [ ] Spec §6.2 calendar component: Task 10.
-- [ ] Spec §6.3 JournalIndex emitter: Task 9.
-- [ ] Spec §6.4 topic-subgraph view: Task 12.
+- [ ] Spec §1 goal — graph is the front door: Task 7.
+- [ ] Spec §2 non-goals — no Jekyll content remains: Task 1 wiped, Task 4 only imports legacy posts.
+- [ ] Spec §4 repo layout — matches: verify with `tree -L 2 -I node_modules`.
+- [ ] Spec §5 content model — three types, frontmatter as specified: Tasks 4, 9.
+- [ ] Spec §6.1 graph-dominant landing: Task 7.
+- [ ] Spec §6.2 calendar component: Task 6.
+- [ ] Spec §6.3 JournalIndex emitter: Task 5.
+- [ ] Spec §6.4 topic-subgraph view: Task 8.
 - [ ] Spec §6.5 tag-filtered global graph: deferred (spec marked optional).
-- [ ] Spec §7 bootstrap enrichment: Tasks 4–8.
-- [ ] Spec §8 `/journal` slash command: Task 13.
-- [ ] Spec §9 build & deploy: Task 14.
-- [ ] Spec §10 migration plan: covered across Tasks 1, 2, 14.
-- [ ] Spec §12 success criteria — verified in Task 15 smoke test.
+- [ ] Spec §7 bootstrap enrichment: Task 4.
+- [ ] Spec §8 `/journal` slash command: Task 9.
+- [ ] Spec §9 build & deploy: Task 10.
+- [ ] Spec §10 migration plan: covered across Tasks 1, 2, 10.
+- [ ] Spec §12 success criteria — verified in Task 11 smoke test.
