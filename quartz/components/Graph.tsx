@@ -69,8 +69,11 @@ export default ((opts?: Partial<GraphOptions>) => {
     if (cssclasses.includes("graph-landing")) {
       localGraph.depth = -1
       localGraph.focusOnHover = true
-      localGraph.enableRadial = true
-      localGraph.scale = 0.9
+      localGraph.enableRadial = false
+      localGraph.scale = 1.0
+      localGraph.repelForce = 2.5
+      localGraph.linkDistance = 60
+      localGraph.centerForce = 0.1
     }
     return (
       <div class={classNames(displayClass, "graph")}>
