@@ -60,9 +60,18 @@ const defaultOptions: GraphOptions = {
 }
 
 export default ((opts?: Partial<GraphOptions>) => {
-  const Graph: QuartzComponent = ({ displayClass, cfg }: QuartzComponentProps) => {
+  const Graph: QuartzComponent = ({ displayClass, cfg, fileData }: QuartzComponentProps) => {
     const localGraph = { ...defaultOptions.localGraph, ...opts?.localGraph }
     const globalGraph = { ...defaultOptions.globalGraph, ...opts?.globalGraph }
+    // On the landing page (cssclass `graph-landing`), render the global graph
+    // inline by setting the local graph's depth to -1 (unbounded BFS).
+    const cssclasses: string[] = (fileData.frontmatter?.cssclasses as string[] | undefined) ?? []
+    if (cssclasses.includes("graph-landing")) {
+      localGraph.depth = -1
+      localGraph.focusOnHover = true
+      localGraph.enableRadial = true
+      localGraph.scale = 0.9
+    }
     return (
       <div class={classNames(displayClass, "graph")}>
         <h3>{i18n(cfg.locale).components.graph.title}</h3>
