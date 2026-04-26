@@ -1,89 +1,167 @@
 @use "./base.scss";
 @use "./variables.scss" as *;
 
-// Graph-dominant landing page (applied via `cssclasses: [graph-landing]` on content/index.md)
+// ============================================================================
+// Global tweaks (apply to every page)
+// ============================================================================
+
+// The auto-built file explorer is awkward for this knowledge graph site.
+// Hide it everywhere — the global graph + search + calendar + backlinks
+// are richer navigation primitives for this kind of vault.
+.explorer {
+  display: none !important;
+}
+
+// Make the inline local graph on every page bigger so it's actually useful
+// for exploring topic neighborhoods (depth=2 needs room).
+.sidebar.right .graph > .graph-outer {
+  height: 400px;
+  @media all and not ($desktop) {
+    height: 320px;
+  }
+}
+
+// ============================================================================
+// Graph-dominant landing page (cssclasses: [graph-landing] on content/index.md)
+// ============================================================================
+
 body:has(article.graph-landing) {
-  // Hide the left sidebar (page title + search + explorer) and the article body chrome,
-  // letting the graph (which lives in the right sidebar) take over the viewport.
-  & .sidebar.left {
-    display: none;
+  // Fixed-viewport layout — no scroll. We replace the default CSS Grid with a
+  // simple flex column: thin top header, tagline, graph fills the remainder.
+  // The footer is hidden on landing (it's not load-bearing nav for this page).
+
+  overflow: hidden; // belt-and-suspenders against tiny overflow
+
+  & #quartz-body {
+    display: flex !important;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    grid-template-areas: none !important;
   }
 
-  // Reflow the page grid: just header / center / right (graph) / footer.
-  // Keep the right sidebar for desktop (where the Graph component lives) but make it dominant.
-  & #quartz-body {
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-areas:
-      "grid-header"
-      "grid-center"
-      "grid-sidebar-right"
-      "grid-footer" !important;
+  // --- top header strip ---
+  // Repurpose the left sidebar into a thin horizontal strip at the top.
+  & .sidebar.left {
+    position: relative !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem !important;
+    border-bottom: 1px solid var(--lightgray);
+    gap: 1rem;
+    flex: 0 0 auto;
+    top: auto !important;
 
-    @media all and not ($desktop) {
-      grid-template-columns: 1fr !important;
-      grid-template-areas:
-        "grid-header"
-        "grid-center"
-        "grid-sidebar-right"
-        "grid-footer" !important;
+    // Site title on the left
+    & > .page-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      flex: 0 0 auto;
+
+      & > a {
+        color: var(--dark);
+        background-color: transparent;
+      }
+    }
+
+    // The Flex container holds Search/Darkmode/ReaderMode/Calendar — keep it
+    // tight on the right side.
+    & > .flex-component,
+    & > [class*="flex"] {
+      flex: 0 0 auto;
+      gap: 0.5rem !important;
+      margin-left: auto;
+    }
+
+    & .spacer.mobile-only {
+      display: none;
     }
   }
 
-  // The right sidebar holds Graph + (TOC + Backlinks). Make it span and grow.
+  // --- tagline (center column) ---
+  & .center {
+    flex: 0 0 auto;
+    padding: 0.75rem 0 0.5rem;
+    min-height: 0;
+    text-align: center;
+  }
+
+  & .center > .page-header,
+  & .center > hr,
+  & .center > .page-footer {
+    display: none;
+  }
+
+  & article.graph-landing {
+    margin: 0 auto;
+    max-width: 60ch;
+    padding: 0;
+    text-align: center;
+
+    & > p {
+      color: var(--gray);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+  }
+
+  // --- the graph — flex-grow to fill remaining height ---
   & .sidebar.right {
-    width: 100%;
-    height: auto;
-    position: relative;
-    padding: 0 2rem;
+    position: relative !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0.5rem 1.5rem 1.5rem !important;
+    margin: 0 !important;
     flex-direction: column;
+    top: auto !important;
 
     & > .toc,
     & > .backlinks {
       display: none;
     }
-  }
 
-  // The graph itself: stretch the local-graph container to dominate the viewport.
-  & .graph {
-    width: 100%;
+    & > .graph {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
 
-    & > h3 {
-      display: none;
-    }
+      & > h3 {
+        display: none;
+      }
 
-    & > .graph-outer {
-      height: 78vh;
-      margin: 0;
-    }
-  }
+      & > .graph-outer {
+        flex: 1 1 auto;
+        height: auto !important;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+      }
 
-  // Hide the page-header chrome (article title + content meta) on the landing.
-  & .center > .page-header {
-    display: none;
-  }
-
-  // Hide the horizontal rule between article and footer.
-  & .center > hr {
-    display: none;
-  }
-
-  // Demote the article body to just the centered tagline.
-  & article.graph-landing {
-    text-align: center;
-    max-width: 60ch;
-    margin: 0 auto;
-    padding: 1.25rem 0 0.5rem;
-
-    & > p {
-      color: var(--gray);
-      font-size: 0.95rem;
-      margin: 0;
+      & > .graph-container {
+        width: 100%;
+        height: 100%;
+      }
     }
   }
 
-  // Center column shouldn't enforce a tall min-height that pushes graph offscreen.
-  & .center {
-    min-height: 0;
-    padding-top: 1rem;
+  // Hide footer entirely on the landing page
+  & footer {
+    display: none !important;
   }
 }
