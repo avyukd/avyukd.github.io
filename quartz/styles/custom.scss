@@ -1,3 +1,89 @@
 @use "./base.scss";
+@use "./variables.scss" as *;
 
-// put your custom CSS here!
+// Graph-dominant landing page (applied via `cssclasses: [graph-landing]` on content/index.md)
+body:has(article.graph-landing) {
+  // Hide the left sidebar (page title + search + explorer) and the article body chrome,
+  // letting the graph (which lives in the right sidebar) take over the viewport.
+  & .sidebar.left {
+    display: none;
+  }
+
+  // Reflow the page grid: just header / center / right (graph) / footer.
+  // Keep the right sidebar for desktop (where the Graph component lives) but make it dominant.
+  & #quartz-body {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "grid-header"
+      "grid-center"
+      "grid-sidebar-right"
+      "grid-footer" !important;
+
+    @media all and not ($desktop) {
+      grid-template-columns: 1fr !important;
+      grid-template-areas:
+        "grid-header"
+        "grid-center"
+        "grid-sidebar-right"
+        "grid-footer" !important;
+    }
+  }
+
+  // The right sidebar holds Graph + (TOC + Backlinks). Make it span and grow.
+  & .sidebar.right {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 0 2rem;
+    flex-direction: column;
+
+    & > .toc,
+    & > .backlinks {
+      display: none;
+    }
+  }
+
+  // The graph itself: stretch the local-graph container to dominate the viewport.
+  & .graph {
+    width: 100%;
+
+    & > h3 {
+      display: none;
+    }
+
+    & > .graph-outer {
+      height: 78vh;
+      margin: 0;
+    }
+  }
+
+  // Hide the page-header chrome (article title + content meta) on the landing.
+  & .center > .page-header {
+    display: none;
+  }
+
+  // Hide the horizontal rule between article and footer.
+  & .center > hr {
+    display: none;
+  }
+
+  // Demote the article body to just the centered tagline.
+  & article.graph-landing {
+    text-align: center;
+    max-width: 60ch;
+    margin: 0 auto;
+    padding: 1.25rem 0 0.5rem;
+
+    & > p {
+      color: var(--gray);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+  }
+
+  // Center column shouldn't enforce a tall min-height that pushes graph offscreen.
+  & .center {
+    min-height: 0;
+    padding-top: 1rem;
+  }
+}

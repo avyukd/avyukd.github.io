@@ -1,5 +1,7 @@
 ---
 title: Avyuk's Knowledge Graph
+cssclasses:
+  - graph-landing
 ---
 
-Placeholder. Will be replaced with the graph-landing layout in a later task.
+A public journal and knowledge graph. Click any node, or pick a date.
