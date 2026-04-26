@@ -1,5 +1,6 @@
 import { QuartzConfig } from "./quartz/cfg"
 import * as Plugin from "./quartz/plugins"
+import { JournalIndex } from "./quartz/plugins/custom/journalIndex"
 
 /**
  * Quartz 4 Configuration
@@ -90,6 +91,7 @@ const config: QuartzConfig = {
       Plugin.NotFoundPage(),
       // Comment out CustomOgImages to speed up build time
       Plugin.CustomOgImages(),
+      JournalIndex(),
     ],
   },
 }
