@@ -9,7 +9,7 @@ import { JournalIndex } from "./quartz/plugins/custom/journalIndex"
  */
 const config: QuartzConfig = {
   configuration: {
-    pageTitle: "Avyuk's Knowledge Graph",
+    pageTitle: "Avyuk's Website",
     pageTitleSuffix: "",
     enableSPA: true,
     enablePopovers: true,
