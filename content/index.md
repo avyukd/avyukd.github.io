@@ -4,4 +4,4 @@ cssclasses:
   - graph-landing
 ---
 
-A public journal and knowledge graph. Click any node, or pick a date.
+A public journal and knowledge graph. Click any node, pick a date, or explore [posts](/posts) directly.
