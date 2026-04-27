@@ -13,7 +13,7 @@ summary: "Long pitch for Nagarro — surface-level red flags mask a high-quality
 
 [[nagarro|Nagarro]] (DB:NA9; €1.2bn TEV) is a global IT services company domiciled in Germany. They spun off from Allgeier in late 2021. The company trades at a large discount to American peers, despite impressive growth over the past decade (though from a much smaller base and reliance on inorganic levers).
 
-<img src="/posts/2024-04-03-the-ugly-duckling/image1.emf" style="width:3.90768in;height:1.31616in" />
+<img src="/posts/legacy/2024-04-03-the-ugly-duckling/image1.emf" style="width:3.90768in;height:1.31616in" />
 
 NTM estimates from Koyfin, Rev CAGR from Bonsai Partners Letter
 
@@ -35,19 +35,19 @@ This is a company that does things differently but cares about its shareholders,
 
 I think Nagarro is worth €190 vs. ~€76 stock price today, or a ~30% IRR over the next 8 years.
 
-<img src="/posts/2024-04-03-the-ugly-duckling/image2.emf" style="width:6.5in;height:2.66181in" />
+<img src="/posts/legacy/2024-04-03-the-ugly-duckling/image2.emf" style="width:6.5in;height:2.66181in" />
 
 The numbers are clear, and the crux of our investment case rests on disavowing the red flags investors are quick to label Nagarro with.
 
 Let’s start with Manas. Aside from writing poetry books, lobbying for action against climate change, and riding his bike on the crowded roads of Gurugram, Manas loves to tweet! Oh and of course, Manas is the CEO of a multinational IT services company. Manas seems distracted and unfocused on growing Nagarro, yet the company showed organic growth of \>20% CAGR from 2018-2022! Yes, this is less than peers, but it is nothing to scoff at and gives credence to forward guidance.
 
-<img src="/posts/2024-04-03-the-ugly-duckling/image3.emf" style="width:3.53686in;height:0.75111in" />
+<img src="/posts/legacy/2024-04-03-the-ugly-duckling/image3.emf" style="width:3.53686in;height:0.75111in" />
 
 Manas is an eccentric personality, and this spills over into Nagarro: the decentralized nature of the company and cultural quirks (like annual retreats and investor days where speakers can talk about anything they please – including poetry) are evidence. But why punish eccentricity when it works? If Tesla prices in a leadership premium, why shouldn’t Nagarro?
 
 And what about the rest of the management team and other insiders? Over 40% of shares are owned by insiders, primarily Vikram Seghal (StarView Management), co-founder and “COO” (custodian of operational excellence), Detlef Dinsel, vice board chair, and Carl Georg Duerschmidt (Lantano Beteilligungen), board chair.
 
-<img src="/posts/2024-04-03-the-ugly-duckling/image4.png" style="width:2.66667in;height:1.80456in" alt="A pie chart with numbers and text Description automatically generated" />
+<img src="/posts/legacy/2024-04-03-the-ugly-duckling/image4.png" style="width:2.66667in;height:1.80456in" alt="A pie chart with numbers and text Description automatically generated" />
 
 Insiders bought at much higher prices than where the stock trades at today and are heavily incentivized to inspire stock price appreciation.
 
@@ -71,7 +71,7 @@ With a little bit of research and maybe a couple of calls with Manas, it’s not
 
 Nagarro’s listed IR “expert” is Gagan Bakshi – yet Gagan is a managing director at Nagarro and by no means an IR specialist. In fact, he barely speaks English… I don’t mean to dump on Gagan but he is not the right person to articulate the long case for Nagarro and enthuse investors.
 
-<img src="/posts/2024-04-03-the-ugly-duckling/image5.png" style="width:1.70472in;height:1.26405in" alt="A screenshot of a phone Description automatically generated" />
+<img src="/posts/legacy/2024-04-03-the-ugly-duckling/image5.png" style="width:1.70472in;height:1.26405in" alt="A screenshot of a phone Description automatically generated" />
 
 Really, the right person to talk to is Manas – but even though Manas is highly accessible as far as CEOs go, he has said that he has been stretched thin by investor calls and will be offloading more of that responsibility to Gagan.
 

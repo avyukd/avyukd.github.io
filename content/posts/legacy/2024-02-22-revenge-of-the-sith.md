@@ -30,7 +30,7 @@ So which line of work do I prefer – software engineering or investing? I enjoy
 
 I ended up choosing software engineering, but not for the reasons above. There was something deeper that pushed me towards it that I struggled to communicate until I saw this tweet:
 
-<img src="/posts/2024-02-22-revenge-of-the-sith/image1.png" style="width:3.26735in;height:3.72175in" alt="A screenshot of a social media post Description automatically generated" />
+<img src="/posts/legacy/2024-02-22-revenge-of-the-sith/image1.png" style="width:3.26735in;height:3.72175in" alt="A screenshot of a social media post Description automatically generated" />
 
 Software engineers build, and investors judge. The engineers (in the generic sense, not just SWEs) add value to society, and the investors judge how much and for how long the engineers can add value. It’s fun to be an investor – you play in a game where you just judge people all the time! I can’t imagine anyone who wouldn’t have fun investing, given they know how to play.
 
