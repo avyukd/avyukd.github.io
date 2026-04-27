@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "URNM"
 type: topic
 tags:

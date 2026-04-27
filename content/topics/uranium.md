@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "Uranium"
 type: topic
 tags:

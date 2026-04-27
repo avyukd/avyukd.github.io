@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "Paul Graham"
 type: topic
 tags:

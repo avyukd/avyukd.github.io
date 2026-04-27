@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "TAT Technologies (TATT)"
 type: topic
 tags:

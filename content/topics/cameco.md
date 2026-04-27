@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "Cameco"
 type: topic
 tags:

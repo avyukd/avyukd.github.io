@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "LEE"
 type: topic
 tags:

@@ -1,4 +1,5 @@
 ---
+noindex: true
 title: "Valaris"
 type: topic
 tags:
