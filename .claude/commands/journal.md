@@ -71,20 +71,21 @@ On approval:
 
   ```
 
-## 8. Commit
+## 8. Commit and push
 
 ```bash
 git add content/
 git commit -m "journal: ${TODAY}"
+git push
 ```
 
 ## 9. Confirm
 
-Tell the user: **"Wrote `content/journal/${TODAY}.md` and N new topic stubs. Committed locally — push when ready."**
+Tell the user: **"Wrote `content/journal/${TODAY}.md` and N new topic stubs. Committed and pushed."**
 
 ## Anti-patterns
 
-- DO NOT push to remote. The user pushes manually.
+- DO NOT skip the push step.
 - DO NOT reformat or rewrite past entries.
 - DO NOT add `summary:` to journal entries (only posts have summaries).
 - DO NOT invent topic stubs the prose doesn't actually discuss.
