@@ -22,9 +22,11 @@ In parallel:
 
 If `content/journal/${TODAY}.md` already exists, read it. You will append a new section (under a `## HH:MM` heading), NOT overwrite. Note the existing tags and links.
 
-## 4. Prompt for raw input
+## 4. Collect raw input
 
-Ask the user: **"What's on your mind today?"** Wait for the response. Their reply is `RAW`.
+If the user has already been talking in this conversation before invoking `/journal`, use the full content of their messages as `RAW` — do NOT ask "What's on your mind today?" They've already told you.
+
+Only ask **"What's on your mind today?"** if this is the very first message in the session (i.e., `/journal` was invoked with no prior conversation content).
 
 ## 5. Compose the entry
 
