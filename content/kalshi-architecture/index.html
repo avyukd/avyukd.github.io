@@ -1,0 +1,2200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture for an AI-Native Prediction Market Trading System</title>
+  <meta name="description" content="A working architecture for replayable trading engines, external account truth, first-class pricing models, and an eval-driven learning system.">
+  <meta name="theme-color" content="#07110d">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Architecture for an AI-Native Prediction Market Trading System">
+  <meta property="og:description" content="Replayable engines, external account truth, pricing models, and an eval-driven learning system—one coherent design.">
+  <meta property="og:url" content="https://avyukd.github.io/kalshi-architecture/">
+  <meta property="og:image" content="https://avyukd.github.io/kalshi-architecture/og.png">
+  <meta property="og:image:alt" content="A dark green architecture diagram connecting market feeds, replayable engines, risk, execution, pricing, and evals.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Architecture for an AI-Native Prediction Market Trading System">
+  <meta name="twitter:description" content="Replayable by construction. Improved by evidence.">
+  <meta name="twitter:image" content="https://avyukd.github.io/kalshi-architecture/og.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07110d;
+      --bg-deep: #040b08;
+      --surface: #0b1913;
+      --surface-2: #10231b;
+      --surface-3: #142b21;
+      --line: #234334;
+      --line-soft: rgba(148, 198, 169, 0.16);
+      --text: #edf8f1;
+      --muted: #9ab3a4;
+      --faint: #71887a;
+      --green: #5feb98;
+      --green-soft: #a4f5c7;
+      --blue: #74c9ff;
+      --amber: #f1c66f;
+      --purple: #c3a6ff;
+      --red: #ff9388;
+      --max: 1240px;
+      --radius: 16px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 92px;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 78% -10%, rgba(64, 182, 113, 0.12), transparent 34rem),
+        radial-gradient(circle at -10% 25%, rgba(64, 125, 99, 0.08), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 10px;
+      left: 10px;
+      padding: 10px 14px;
+      transform: translateY(-160%);
+      border-radius: 8px;
+      background: var(--green);
+      color: #04100a;
+      font-weight: 800;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    :focus-visible {
+      outline: 3px solid var(--green);
+      outline-offset: 4px;
+    }
+
+    .site-nav {
+      position: sticky;
+      z-index: 50;
+      top: 0;
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(7, 17, 13, 0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      width: min(calc(100% - 40px), var(--max));
+      min-height: 68px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 780;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 1px solid rgba(95, 235, 152, 0.5);
+      border-radius: 9px;
+      background: rgba(95, 235, 152, 0.08);
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.76rem;
+    }
+
+    .anchor-nav {
+      display: flex;
+      min-width: 0;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .anchor-nav::-webkit-scrollbar { display: none; }
+
+    .anchor-nav a {
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .anchor-nav a:hover {
+      background: rgba(95, 235, 152, 0.08);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(calc(100% - 40px), var(--max));
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(290px, 0.7fr);
+      gap: 70px;
+      align-items: end;
+      min-height: 660px;
+      padding: 112px 0 78px;
+    }
+
+    .eyebrow,
+    .section-kicker,
+    .card-kicker {
+      margin: 0 0 15px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { text-wrap: pretty; }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.4rem, 7.6vw, 7.6rem);
+      font-weight: 500;
+      letter-spacing: -0.058em;
+      line-height: 0.91;
+    }
+
+    h1 span { color: var(--green); }
+
+    .lede {
+      max-width: 760px;
+      margin: 31px 0 0;
+      color: #bed0c4;
+      font-size: clamp(1.02rem, 1.6vw, 1.3rem);
+      line-height: 1.6;
+    }
+
+    .hero-side {
+      padding-bottom: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .hero-fact {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .hero-fact small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--faint);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.67rem;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .hero-fact strong {
+      display: block;
+      font-size: 1.05rem;
+      line-height: 1.35;
+    }
+
+    .thesis {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 34px;
+      margin: 0 0 110px;
+      padding: 27px 30px;
+      border: 1px solid rgba(95, 235, 152, 0.28);
+      border-radius: var(--radius);
+      background: linear-gradient(105deg, rgba(95, 235, 152, 0.11), rgba(95, 235, 152, 0.025));
+      box-shadow: var(--shadow);
+    }
+
+    .thesis strong {
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .thesis p {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.45rem, 3vw, 2.35rem);
+      line-height: 1.26;
+    }
+
+    .section {
+      padding: 104px 0 24px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.55fr);
+      gap: 70px;
+      align-items: end;
+      margin-bottom: 40px;
+    }
+
+    .section-heading h2 {
+      max-width: 780px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.25rem, 4.9vw, 4.7rem);
+      font-weight: 500;
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+
+    .section-heading > p,
+    .section-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .subhead {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin: 82px 0 26px;
+    }
+
+    .subhead h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 3vw, 2.6rem);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+    }
+
+    .subhead p {
+      max-width: 590px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .chapter {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.45fr);
+      gap: 60px;
+      align-items: end;
+      margin: 104px 0 0;
+      padding: 54px 0 44px;
+      border-top: 3px solid var(--green);
+    }
+
+    .chapter h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.8rem, 6vw, 6rem);
+      font-weight: 500;
+      letter-spacing: -0.055em;
+      line-height: 0.95;
+    }
+
+    .chapter p:last-child {
+      margin: 0;
+      color: #bed0c4;
+      font-size: 1.03rem;
+    }
+
+    .chapter-number {
+      color: rgba(95, 235, 152, 0.24);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(5rem, 12vw, 10rem);
+      line-height: 0.75;
+      text-align: right;
+    }
+
+    .principle-grid,
+    .card-grid,
+    .metric-grid,
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .principle,
+    .card,
+    .metric,
+    .question {
+      min-width: 0;
+      padding: 25px;
+      border: 1px solid var(--line-soft);
+      border-radius: 13px;
+      background: rgba(11, 25, 19, 0.74);
+    }
+
+    .principle .number,
+    .metric .number {
+      display: block;
+      margin-bottom: 30px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.7rem;
+    }
+
+    .principle h3,
+    .card h3,
+    .metric h3,
+    .question h3 {
+      margin: 0 0 9px;
+      font-size: 1rem;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+    }
+
+    .principle p,
+    .card p,
+    .metric p,
+    .question p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .north-map,
+    .architecture,
+    .loop-frame,
+    .boundary-panel,
+    .table-wrap,
+    .code-pair {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(8, 20, 14, 0.72);
+      box-shadow: var(--shadow);
+    }
+
+    .north-flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(170px, 1fr));
+      gap: 1px;
+      overflow-x: auto;
+      background: var(--line);
+    }
+
+    .plane {
+      min-width: 170px;
+      padding: 21px 18px 23px;
+      background: var(--surface);
+    }
+
+    .plane-label {
+      min-height: 78px;
+      margin-bottom: 13px;
+    }
+
+    .plane-label small {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .plane-label strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      line-height: 1.15;
+    }
+
+    .node {
+      min-height: 72px;
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .node strong,
+    .node span { display: block; }
+
+    .node strong {
+      margin-bottom: 3px;
+      font-size: 0.77rem;
+    }
+
+    .node span {
+      color: var(--faint);
+      font-size: 0.65rem;
+      line-height: 1.4;
+    }
+
+    .learning-ribbon {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 20px;
+      padding: 18px 22px;
+      background: rgba(95, 235, 152, 0.09);
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    .learning-ribbon strong { color: var(--green-soft); }
+
+    .architecture { overflow-x: auto; }
+
+    .mermaid-figure {
+      margin: 0 0 18px;
+      padding: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(8, 20, 14, 0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .mermaid-figure figcaption {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 19px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .mermaid-figure figcaption strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.3rem;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+    }
+
+    .mermaid-figure figcaption span {
+      max-width: 590px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-align: right;
+    }
+
+    .mermaid {
+      min-height: 240px;
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: 10px;
+      background: var(--bg-deep);
+      color: var(--green-soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.67rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .mermaid[data-processed="true"] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      white-space: normal;
+    }
+
+    .mermaid svg {
+      width: 100%;
+      height: auto;
+      max-height: 680px;
+    }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      min-width: 980px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .lane:last-child { border-bottom: 0; }
+
+    .lane-label {
+      padding: 24px 18px;
+      border-right: 1px solid var(--line-soft);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .lane-flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(125px, 1fr));
+      gap: 9px;
+      padding: 16px;
+    }
+
+    .box,
+    .flow-box {
+      position: relative;
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line-soft);
+      border-radius: 9px;
+      background: var(--surface-2);
+    }
+
+    .box:not(:last-child)::after,
+    .flow-row > *:not(:last-child)::after,
+    .timeline > *:not(:last-child)::after,
+    .promotion > *:not(:last-child)::after,
+    .pricing-flow > *:not(:last-child)::after {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: -10px;
+      color: var(--faint);
+      content: "→";
+      font-size: 0.75rem;
+      transform: translateY(-50%);
+    }
+
+    .box small,
+    .flow-box small,
+    .stage small {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--faint);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .box strong,
+    .box span,
+    .flow-box strong,
+    .flow-box span,
+    .stage strong,
+    .stage span { display: block; }
+
+    .box strong,
+    .flow-box strong,
+    .stage strong {
+      margin-bottom: 5px;
+      font-size: 0.79rem;
+      line-height: 1.25;
+    }
+
+    .box span,
+    .flow-box span,
+    .stage span {
+      color: var(--muted);
+      font-size: 0.65rem;
+      line-height: 1.4;
+    }
+
+    .box.external { border-top: 2px solid var(--purple); }
+    .box.replay { border-top: 2px solid var(--blue); }
+    .box.authority { border-top: 2px solid var(--amber); }
+    .box.ai { border-top: 2px solid var(--green); }
+    .box.engine {
+      grid-column: span 2;
+      background: rgba(63, 133, 103, 0.18);
+    }
+    .box.span-2 { grid-column: span 2; }
+
+    .formula {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .formula-card {
+      padding: 24px;
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .formula-card small {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    code,
+    pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .formula-card code {
+      display: block;
+      overflow-x: auto;
+      color: var(--green-soft);
+      font-size: clamp(0.75rem, 1.35vw, 0.95rem);
+      white-space: nowrap;
+    }
+
+    .formula-card p {
+      margin: 15px 0 0;
+      color: var(--muted);
+      font-size: 0.79rem;
+    }
+
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .channel {
+      padding: 22px;
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .channel header {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .channel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 18px rgba(95, 235, 152, 0.6);
+    }
+
+    .channel h3 {
+      margin: 0;
+      font-size: 0.93rem;
+    }
+
+    .channel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .envelope {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--line);
+    }
+
+    .envelope div {
+      min-width: 0;
+      padding: 17px 14px;
+      background: var(--surface);
+    }
+
+    .envelope strong,
+    .envelope span { display: block; }
+
+    .envelope strong {
+      margin-bottom: 4px;
+      color: var(--green-soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.65rem;
+    }
+
+    .envelope span {
+      color: var(--faint);
+      font-size: 0.65rem;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .feature-panel {
+      padding: 28px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .feature-panel.accent {
+      border-color: rgba(95, 235, 152, 0.3);
+      background: linear-gradient(145deg, rgba(95, 235, 152, 0.1), rgba(11, 25, 19, 0.84));
+    }
+
+    .feature-panel h3 {
+      margin: 0 0 11px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+    }
+
+    .feature-panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .clean-list {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .clean-list li {
+      position: relative;
+      padding-left: 20px;
+      color: #bfd0c5;
+      font-size: 0.79rem;
+    }
+
+    .clean-list li::before {
+      position: absolute;
+      top: 0.58em;
+      left: 0;
+      width: 7px;
+      height: 1px;
+      background: var(--green);
+      content: "";
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+
+    th,
+    td {
+      padding: 15px 17px;
+      border-right: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child { border-right: 0; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    th {
+      background: rgba(95, 235, 152, 0.07);
+      color: var(--green-soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    td { color: var(--muted); }
+    td:first-child { color: var(--text); font-weight: 650; }
+
+    .timeline,
+    .flow-row,
+    .promotion,
+    .pricing-flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .timeline .flow-box,
+    .flow-row .flow-box,
+    .pricing-flow .flow-box { min-height: 145px; }
+
+    .boundary-panel {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr 1fr;
+      align-items: stretch;
+    }
+
+    .boundary-block {
+      padding: 30px;
+      border-right: 1px solid var(--line-soft);
+    }
+
+    .boundary-block:last-child { border-right: 0; }
+
+    .boundary-block small {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .boundary-block h3 {
+      margin: 0 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.55rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+    }
+
+    .boundary-block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .boundary-block code {
+      display: block;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 8px;
+      background: var(--bg-deep);
+      color: var(--green-soft);
+      font-size: 0.68rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .safety-note,
+    .model-note {
+      margin: 12px 0 0;
+      padding: 19px 22px;
+      border-left: 3px solid var(--amber);
+      border-radius: 0 10px 10px 0;
+      background: rgba(241, 198, 111, 0.07);
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .safety-note strong,
+    .model-note strong { color: var(--text); }
+
+    .definition {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 12px;
+    }
+
+    .definition-card {
+      padding: 30px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .definition-card:first-child {
+      border-color: rgba(95, 235, 152, 0.32);
+      background: linear-gradient(135deg, rgba(95, 235, 152, 0.11), rgba(11, 25, 19, 0.88));
+    }
+
+    .definition-card h3 {
+      margin: 0 0 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.65rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .definition-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .eval-formula {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--line);
+    }
+
+    .eval-formula div {
+      padding: 18px 14px;
+      background: var(--surface);
+    }
+
+    .eval-formula strong,
+    .eval-formula span { display: block; }
+
+    .eval-formula strong {
+      margin-bottom: 5px;
+      color: var(--green-soft);
+      font-size: 0.75rem;
+    }
+
+    .eval-formula span {
+      color: var(--faint);
+      font-size: 0.63rem;
+    }
+
+    .loop-frame { padding: 12px; }
+
+    .loop-band {
+      display: grid;
+      grid-template-columns: 104px 1fr;
+      gap: 12px;
+      align-items: stretch;
+      padding: 10px;
+    }
+
+    .loop-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(95, 235, 152, 0.07);
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .loop-band .flow-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .loop-band + .loop-band .flow-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    .feedback-band {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: var(--line);
+    }
+
+    .feedback-step {
+      padding: 18px;
+      background: rgba(95, 235, 152, 0.06);
+    }
+
+    .feedback-step strong,
+    .feedback-step span { display: block; }
+
+    .feedback-step strong {
+      margin-bottom: 4px;
+      color: var(--green-soft);
+      font-size: 0.73rem;
+    }
+
+    .feedback-step span {
+      color: var(--muted);
+      font-size: 0.65rem;
+    }
+
+    .tree-root {
+      max-width: 780px;
+      margin: 0 auto 18px;
+      padding: 28px;
+      border: 1px solid rgba(95, 235, 152, 0.35);
+      border-radius: 14px;
+      background: rgba(95, 235, 152, 0.09);
+      text-align: center;
+    }
+
+    .tree-root small,
+    .tree-root strong,
+    .tree-root span { display: block; }
+
+    .tree-root small {
+      margin-bottom: 7px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .tree-root strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .tree-root span {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 18px;
+    }
+
+    .chips span,
+    .permission,
+    .status {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 5px 8px;
+      border: 1px solid var(--line-soft);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--faint);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.57rem;
+    }
+
+    .episode { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    .guardrails {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .guardrail {
+      padding: 23px;
+      border-top: 2px solid var(--red);
+      border-right: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+      border-left: 1px solid var(--line-soft);
+      border-radius: 11px;
+      background: var(--surface);
+    }
+
+    .guardrail h3 {
+      margin: 0 0 9px;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+
+    .guardrail p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .promotion { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    .stage {
+      position: relative;
+      min-height: 126px;
+      padding: 18px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .stage:nth-child(5) { border-top: 2px solid var(--amber); }
+    .stage:nth-child(6) { border-top: 2px solid var(--green); }
+
+    .code-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .code-card {
+      min-width: 0;
+      padding: 26px;
+      border-right: 1px solid var(--line-soft);
+    }
+
+    .code-card:last-child { border-right: 0; }
+
+    .code-card pre {
+      margin: 0;
+      overflow-x: auto;
+      color: var(--green-soft);
+      font-size: 0.72rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .code-card p {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .agent-card {
+      padding: 24px;
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .agent-card small {
+      display: block;
+      margin-bottom: 11px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.61rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .agent-card h3 { margin: 0 0 8px; font-size: 0.96rem; }
+    .agent-card p { margin: 0 0 18px; color: var(--muted); font-size: 0.78rem; }
+    .permission { color: var(--green-soft); }
+
+    .synthesis {
+      display: grid;
+      grid-template-columns: 1fr 90px 1fr;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .synthesis-card {
+      min-height: 220px;
+      padding: 32px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .synthesis-card small {
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .synthesis-card h3 {
+      margin: 16px 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2rem;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .synthesis-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+    .plus {
+      color: var(--green);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 4rem;
+      text-align: center;
+    }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .decision {
+      padding: 23px;
+      border: 1px solid var(--line-soft);
+      border-radius: 11px;
+      background: var(--surface);
+    }
+
+    .status { margin-bottom: 16px; }
+    .status.accepted { border-color: rgba(95, 235, 152, 0.32); color: var(--green); }
+    .status.leaning { border-color: rgba(116, 201, 255, 0.3); color: var(--blue); }
+    .status.open { border-color: rgba(241, 198, 111, 0.3); color: var(--amber); }
+
+    .decision h3 { margin: 0 0 8px; font-size: 0.92rem; }
+    .decision p { margin: 0; color: var(--muted); font-size: 0.77rem; }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .phase {
+      padding: 22px;
+      border: 1px solid var(--line-soft);
+      border-radius: 11px;
+      background: var(--surface);
+    }
+
+    .phase .number {
+      display: block;
+      margin-bottom: 30px;
+      color: var(--green);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.66rem;
+    }
+
+    .phase h3 { margin: 0 0 8px; font-size: 0.86rem; }
+    .phase p { margin: 0 0 20px; color: var(--muted); font-size: 0.73rem; }
+    .phase strong { color: var(--green-soft); font-size: 0.68rem; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      margin-top: 120px;
+      padding: 34px 0 48px;
+      border-top: 1px solid var(--line-soft);
+      color: var(--faint);
+      font-size: 0.72rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; gap: 54px; min-height: auto; padding-top: 95px; }
+      .hero-side { display: grid; grid-template-columns: repeat(3, 1fr); }
+      .hero-fact { padding-right: 18px; }
+      .section-heading, .chapter { grid-template-columns: 1fr; gap: 25px; }
+      .chapter-number { display: none; }
+      .principle-grid, .card-grid, .metric-grid, .question-grid, .agent-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .channel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .guardrails { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .timeline, .flow-row, .promotion, .pricing-flow, .episode { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .box:not(:last-child)::after, .flow-row > *:not(:last-child)::after, .timeline > *:not(:last-child)::after, .promotion > *:not(:last-child)::after, .pricing-flow > *:not(:last-child)::after { display: none; }
+      .boundary-panel { grid-template-columns: 1fr; }
+      .boundary-block { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+      .boundary-block:last-child { border-bottom: 0; }
+      .eval-formula, .envelope { grid-template-columns: repeat(3, 1fr); }
+      .loop-band { grid-template-columns: 1fr; }
+      .loop-label { min-height: 42px; writing-mode: horizontal-tb; transform: none; }
+      .loop-band .flow-row, .loop-band + .loop-band .flow-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .feedback-band { grid-template-columns: repeat(2, 1fr); }
+      .roadmap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      html { scroll-padding-top: 74px; }
+      .shell, .nav-inner { width: min(calc(100% - 24px), var(--max)); }
+      .nav-inner { min-height: 58px; gap: 14px; }
+      .brand span:last-child { display: none; }
+      .anchor-nav a { padding: 7px 8px; font-size: 0.7rem; }
+      .hero { padding: 74px 0 55px; }
+      h1 { font-size: clamp(3.05rem, 16vw, 5rem); }
+      .hero-side { grid-template-columns: 1fr; }
+      .thesis { grid-template-columns: 1fr; gap: 12px; margin-bottom: 78px; padding: 22px; }
+      .section { padding-top: 78px; }
+      .chapter { margin-top: 78px; padding-top: 40px; }
+      .principle-grid, .card-grid, .metric-grid, .question-grid, .agent-grid, .decision-grid, .channel-grid, .guardrails, .split, .definition, .formula, .timeline, .flow-row, .promotion, .pricing-flow, .episode, .roadmap { grid-template-columns: 1fr; }
+      .subhead { display: block; margin-top: 64px; }
+      .subhead p { margin-top: 10px; }
+      .envelope, .eval-formula { grid-template-columns: repeat(2, 1fr); }
+      .loop-band .flow-row, .loop-band + .loop-band .flow-row { grid-template-columns: 1fr; }
+      .feedback-band { grid-template-columns: 1fr; }
+      .synthesis { grid-template-columns: 1fr; }
+      .plus { line-height: 0.8; }
+      .code-pair { grid-template-columns: 1fr; }
+      .code-card { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+      .code-card:last-child { border-bottom: 0; }
+      .mermaid-figure { padding: 14px; }
+      .mermaid-figure figcaption { display: block; }
+      .mermaid-figure figcaption span { display: block; margin-top: 6px; text-align: left; }
+      footer { display: block; }
+      footer span { display: block; margin-top: 7px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the report</a>
+
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="Architecture report home">
+        <span class="brand-mark">A1</span>
+        <span>Trading system architecture</span>
+      </a>
+      <nav class="anchor-nav" aria-label="Report sections">
+        <a href="#overview">Overview</a>
+        <a href="#runtime">Replayable engines</a>
+        <a href="#channels">Channels</a>
+        <a href="#account">Account truth</a>
+        <a href="#learning">Evals</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#decisions">Decisions</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="shell">
+    <header class="hero" id="top">
+      <div>
+        <p class="eyebrow">A working north-star architecture</p>
+        <h1>Replayable by construction.<br><span>Improved by evidence.</span></h1>
+        <p class="lede">A coherent design for market data, pricing, deterministic decision engines, shared account risk, controlled execution, and an AI learning system. The runtime makes causes inspectable. The eval system makes improvement safe and cumulative.</p>
+      </div>
+      <aside class="hero-side" aria-label="Design summary">
+        <div class="hero-fact"><small>Option A · Runtime</small><strong>Replayable engines with external account truth</strong></div>
+        <div class="hero-fact"><small>Option B · Learning</small><strong>Evals, agents, and governed promotion</strong></div>
+        <div class="hero-fact"><small>Shared boundary</small><strong>One account-aware path to execution</strong></div>
+      </aside>
+    </header>
+
+    <div class="thesis">
+      <strong>The combined thesis</strong>
+      <p>Every trading decision should be reproducible, explainable, measurable, and unable to bypass account risk.</p>
+    </div>
+
+    <section class="section" id="overview" aria-labelledby="overview-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">01 · North star</p>
+          <h2 id="overview-title">One system, many ways to find an edge</h2>
+        </div>
+        <p>Information moves from evidence to normalized truth, pricing, decisions, portfolio control, and execution. Outcomes return through a first-class learning loop. Each component has one job and one explicit contract.</p>
+      </div>
+
+      <div class="north-map" aria-label="North-star system map">
+        <div class="north-flow">
+          <article class="plane">
+            <div class="plane-label"><small>Plane 01</small><strong>Markets &amp; evidence</strong></div>
+            <div class="node"><strong>Exchange feeds</strong><span>Books, trades, RFQs, fills, lifecycle, settlement</span></div>
+            <div class="node"><strong>Outside markets</strong><span>Futures, sportsbooks, prediction venues, reference prices</span></div>
+            <div class="node"><strong>Context</strong><span>Schedules, weather, releases, documents, news</span></div>
+          </article>
+          <article class="plane">
+            <div class="plane-label"><small>Plane 02</small><strong>Canonical truth</strong></div>
+            <div class="node"><strong>Ingestion</strong><span>Stable events, sequence recovery, observed time</span></div>
+            <div class="node"><strong>Event graph</strong><span>Identity, mappings, relationships, fees, resolution</span></div>
+            <div class="node"><strong>State &amp; history</strong><span>Live projections plus immutable point-in-time evidence</span></div>
+          </article>
+          <article class="plane">
+            <div class="plane-label"><small>Plane 03</small><strong>Models &amp; opportunities</strong></div>
+            <div class="node"><strong>Pricing models</strong><span>Fair value, uncertainty, version, as-of time</span></div>
+            <div class="node"><strong>Dependency model</strong><span>Validated relationships between canonical events</span></div>
+            <div class="node"><strong>Opportunity assembly</strong><span>Fresh, complete, executable strategy inputs</span></div>
+          </article>
+          <article class="plane">
+            <div class="plane-label"><small>Plane 04</small><strong>Decision engines</strong></div>
+            <div class="node"><strong>Strategy registry</strong><span>Versioned parameters and deterministic logic</span></div>
+            <div class="node"><strong>Resting orders</strong><span>Making, cross-market trades, event baskets</span></div>
+            <div class="node"><strong>RFQ strategies</strong><span>Maker and taker decisions from one contract</span></div>
+          </article>
+          <article class="plane">
+            <div class="plane-label"><small>Plane 05</small><strong>Portfolio &amp; control</strong></div>
+            <div class="node"><strong>Capital allocator</strong><span>Budgets, collateral, strategy placement</span></div>
+            <div class="node"><strong>Portfolio risk</strong><span>Inventory, overlap, scenarios, aggregate exposure</span></div>
+            <div class="node"><strong>Pre-trade guard</strong><span>Limits, reservations, permission, fail-closed checks</span></div>
+          </article>
+          <article class="plane">
+            <div class="plane-label"><small>Plane 06</small><strong>Execution &amp; learning</strong></div>
+            <div class="node"><strong>Execution gateway</strong><span>The only boundary allowed to change venue state</span></div>
+            <div class="node"><strong>Position system</strong><span>Orders, fills, positions, cash, collateral, ownership</span></div>
+            <div class="node"><strong>Eval system</strong><span>Episodes, scorers, attribution, experiments, promotion</span></div>
+          </article>
+        </div>
+        <div class="learning-ribbon"><strong>Learning loop</strong><span>executions and settlements → complete trade episodes → evals and attribution → model or strategy candidates → governed versions</span></div>
+      </div>
+
+      <div class="subhead">
+        <h3>Four contracts hold the design together</h3>
+        <p>The choices of database, transport, and process boundaries can evolve. These architectural rules should remain stable.</p>
+      </div>
+      <div class="principle-grid">
+        <article class="principle"><span class="number">01</span><h3>Explicit inputs</h3><p>Market facts, pricing estimates, parameters, account projections, and clocks arrive through named, versioned inputs.</p></article>
+        <article class="principle"><span class="number">02</span><h3>One write boundary</h3><p>Research, pricing, agents, and engines may propose. Only the gateway can send after account-aware authorization.</p></article>
+        <article class="principle"><span class="number">03</span><h3>Replay is a product property</h3><p>Startup state, ordered events, code, decisions, writes, and outcomes form one causal record.</p></article>
+        <article class="principle"><span class="number">04</span><h3>Pricing and policy stay separate</h3><p>A model estimates what an opportunity is worth. A strategy decides whether and how to act.</p></article>
+        <article class="principle"><span class="number">05</span><h3>Account truth stays external</h3><p>Engines use fast local projections. A dedicated position system owns the global, reconciled view.</p></article>
+        <article class="principle"><span class="number">06</span><h3>Evals govern improvement</h3><p>Agents propose changes. Fixed tests, unseen data, shadow runs, and bounded canaries decide what gets promoted.</p></article>
+      </div>
+    </section>
+
+    <div class="chapter" id="runtime">
+      <div>
+        <p class="section-kicker">Option A · Replayable-engine runtime</p>
+        <h2>Replayable engines.<br>External account truth.</h2>
+      </div>
+      <div class="chapter-number" aria-hidden="true">A</div>
+    </div>
+
+    <section class="section" aria-labelledby="runtime-shape-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">02 · Runtime shape</p>
+          <h2 id="runtime-shape-title">Fast local state, no hidden truth</h2>
+        </div>
+        <p>An engine is a deterministic state machine driven by fixed startup inputs and ordered channels. It can hold complex state in memory, but that state must be disposable: delete it, replay its inputs, and recover the same decisions.</p>
+      </div>
+
+      <figure class="mermaid-figure" aria-labelledby="runtime-diagram-title runtime-diagram-caption">
+        <figcaption>
+          <strong id="runtime-diagram-title">Replayable-engine architecture</strong>
+          <span id="runtime-diagram-caption">Versioned context and ordered channels drive the engine. Account authority remains external, and the AI trader acts through governed control events.</span>
+        </figcaption>
+        <pre class="mermaid" role="img" aria-label="Flow diagram of the replayable engine architecture from versioned startup inputs and ordered channels through engine, account risk, execution gateway, Kalshi, account ledger, position system, and feedback channels, with a supervisory AI trader.">
+flowchart LR
+  accTitle: Replayable-engine architecture
+  accDescr: Versioned reference data, configuration, session date, and normalized channels drive a replayable engine. Intents pass through account risk and an execution gateway to Kalshi. Account events update a ledger and position system, which publish channels back to engines and the supervisory AI trader.
+  subgraph START["Versioned startup"]
+    REF["Reference snapshot"]
+    CFG["Engine configuration"]
+    DATE["Session date + code"]
+  end
+
+  subgraph INPUTS["Ordered channels"]
+    MKT["Normalized<br/>venue feeds"]
+    EXT["Normalized<br/>external data"]
+    PRICE["Pricing estimates"]
+    TIMER["Timers"]
+    CTRL["Control + allocation"]
+  end
+
+  ENGINE["Replayable engine<br/>state machine"]
+  INTENT["Trading intent"]
+  RISK["Account-aware<br/>pre-trade risk"]
+  GATEWAY["Execution gateway"]
+  VENUE["Kalshi"]
+  LEDGER["Account event ledger"]
+  POS["Position system"]
+  ACCOUNT["Account channels"]
+  HISTORY["Ordered event history"]
+  AI["AI trader<br/>supervisory loop"]
+  GOV["Validation +<br/>promotion policy"]
+
+  REF --> ENGINE
+  CFG --> ENGINE
+  DATE --> ENGINE
+  MKT --> ENGINE
+  EXT --> ENGINE
+  PRICE --> ENGINE
+  TIMER --> ENGINE
+  CTRL --> ENGINE
+  ENGINE --> INTENT --> RISK --> GATEWAY --> VENUE
+  GATEWAY --> LEDGER
+  VENUE --> LEDGER --> POS --> ACCOUNT
+  ACCOUNT --> ENGINE
+  ACCOUNT --> RISK
+  ACCOUNT --> AI
+  MKT -. capture .-> HISTORY
+  EXT -. capture .-> HISTORY
+  ACCOUNT -. capture .-> HISTORY
+  HISTORY -. replay through same contract .-> ENGINE
+  AI --> GOV --> CTRL
+
+  classDef external fill:#17152a,stroke:#c3a6ff,color:#edf8f1;
+  classDef replay fill:#10253a,stroke:#74c9ff,color:#edf8f1;
+  classDef authority fill:#2a2313,stroke:#f1c66f,color:#edf8f1;
+  classDef agent fill:#102b20,stroke:#5feb98,color:#edf8f1;
+  class REF,CFG,DATE,MKT,EXT,VENUE external;
+  class PRICE,TIMER,ENGINE,INTENT,ACCOUNT,HISTORY replay;
+  class RISK,GATEWAY,LEDGER,POS,GOV authority;
+  class AI,CTRL agent;
+        </pre>
+      </figure>
+
+      <div class="architecture" aria-label="Replayable engine architecture">
+        <div class="lane">
+          <div class="lane-label">Startup inputs</div>
+          <div class="lane-flow">
+            <div class="box external span-2"><small>Versioned</small><strong>Reference snapshot</strong><span>Instruments, canonical events, rules, mappings, subscriptions</span></div>
+            <div class="box external"><small>Versioned</small><strong>Engine config</strong><span>Parameters, assignments, limits, feed declarations</span></div>
+            <div class="box external"><small>Fixed</small><strong>Session date</strong><span>Trading-day identity and time boundary</span></div>
+            <div class="box external span-2"><small>Immutable</small><strong>Code version</strong><span>Exact engine and model implementations</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">Ordered channels</div>
+          <div class="lane-flow">
+            <div class="box external"><small>Market</small><strong>Venue channel</strong><span>Books, trades, RFQs, lifecycle, settlement</span></div>
+            <div class="box external"><small>External</small><strong>Data channel</strong><span>Context and prices from other sources</span></div>
+            <div class="box authority"><small>Account</small><strong>Order &amp; fill channel</strong><span>Acks, rejects, fills, busts, cancels</span></div>
+            <div class="box authority"><small>Control</small><strong>Allocation channel</strong><span>Capital, limits, enablement, versions</span></div>
+            <div class="box replay"><small>Runtime</small><strong>Timer channel</strong><span>Deterministic scheduled callbacks</span></div>
+            <div class="box replay"><small>Model</small><strong>Pricing channel</strong><span>Versioned estimates and uncertainty</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">Hot path</div>
+          <div class="lane-flow">
+            <div class="box replay engine"><small>Deterministic state machine</small><strong>Engine</strong><span>Consumes one event, updates local state, emits zero or more intents</span></div>
+            <div class="box replay"><small>Output</small><strong>Trading intent</strong><span>Place, replace, cancel, quote, accept, hedge, withdraw</span></div>
+            <div class="box authority"><small>Account aware</small><strong>Pre-trade risk</strong><span>Checks the live aggregate account projection</span></div>
+            <div class="box authority"><small>Only write boundary</small><strong>Execution gateway</strong><span>Idempotency, rate limits, lifecycle, recovery</span></div>
+            <div class="box external"><small>Venue</small><strong>Exchange</strong><span>Acknowledgement, matching, fill, settlement</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">Account truth</div>
+          <div class="lane-flow">
+            <div class="box authority span-2"><small>Append-only</small><strong>Account event ledger</strong><span>Intent results, orders, fills, corrections, transfers, settlements</span></div>
+            <div class="box authority span-2"><small>Global projection</small><strong>Position system</strong><span>Positions, working exposure, cash, collateral, P&amp;L, ownership</span></div>
+            <div class="box replay span-2"><small>Published</small><strong>Account channels</strong><span>Per-strategy and account-wide updates feed engines, risk, and agents</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">Replay</div>
+          <div class="lane-flow">
+            <div class="box authority span-2"><small>Captured evidence</small><strong>Ordered event history</strong><span>Raw and normalized feeds with source time, receive time, sequence, schema</span></div>
+            <div class="box replay"><small>Accelerator</small><strong>Snapshot</strong><span>Optional checkpoint with exact watermark</span></div>
+            <div class="box replay span-2"><small>Same contract</small><strong>Replay runtime + engine</strong><span>Historical, shadow, recovery, regression</span></div>
+            <div class="box replay"><small>Compare</small><strong>Decisions &amp; scores</strong><span>Intent equality, candidate deltas, outcomes</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">AI trader</div>
+          <div class="lane-flow">
+            <div class="box ai span-2"><small>Observe</small><strong>Global trading view</strong><span>Positions, risk, fills, capital use, health, replay results</span></div>
+            <div class="box ai span-2"><small>Reason</small><strong>AI trader</strong><span>Proposes strategies, models, allocations, enablement, hedges</span></div>
+            <div class="box authority"><small>Govern</small><strong>Validate &amp; approve</strong><span>Schema, replay, evidence, policy, audit</span></div>
+            <div class="box ai"><small>Publish</small><strong>Control event</strong><span>Versioned decision returns as an engine input</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="formula" aria-label="Deterministic engine contract">
+        <div class="formula-card">
+          <small>Engine initialization</small>
+          <code>S₀ = initialize(ref, config, session, code)</code>
+          <p>Every starting input is named and recoverable. Hidden database reads and ambient configuration are outside the contract.</p>
+        </div>
+        <div class="formula-card">
+          <small>Engine transition</small>
+          <code>(Sₜ₊₁, intentsₜ) = transition(Sₜ, eventₜ)</code>
+          <p>The same state and ordered event produce the same next state and intents. In-memory mutation is only an implementation detail.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="channels" aria-labelledby="channels-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">03 · Feeds and channels</p>
+          <h2 id="channels-title">Everything dynamic arrives as an event</h2>
+        </div>
+        <p>Engines do not poll databases or call agents mid-decision. They consume declared channels. Each channel states its ordering, completeness, versioning, gap-recovery, and snapshot-to-live handoff guarantees.</p>
+      </div>
+
+      <div class="channel-grid">
+        <article class="channel"><header><span class="channel-dot"></span><h3>Venue market channel</h3></header><p>Books, trades, requests for quote, market status, lifecycle, and settlement events.</p></article>
+        <article class="channel"><header><span class="channel-dot"></span><h3>External data channel</h3></header><p>Other venues, sports, crypto, economic data, weather, news, and contextual facts with provenance.</p></article>
+        <article class="channel"><header><span class="channel-dot"></span><h3>Order and fill channel</h3></header><p>Acknowledgements, rejects, fills, corrections, busts, cancels, and venue reconciliation results.</p></article>
+        <article class="channel"><header><span class="channel-dot"></span><h3>Allocation and control channel</h3></header><p>Capital budgets, limits, enablement, parameter versions, model versions, and governed operator intent.</p></article>
+        <article class="channel"><header><span class="channel-dot"></span><h3>Pricing channel</h3></header><p>Fair values, uncertainty, feature lineage, freshness, and immutable model identity.</p></article>
+        <article class="channel"><header><span class="channel-dot"></span><h3>Timer channel</h3></header><p>Recorded scheduled callbacks, deadlines, expiry, heartbeats, and session transitions without reading wall-clock time.</p></article>
+      </div>
+
+      <div class="subhead">
+        <h3>A common event envelope</h3>
+        <p>Payloads differ, but the causal metadata should be stable enough for ordering, debugging, point-in-time reconstruction, and schema evolution.</p>
+      </div>
+      <div class="envelope" aria-label="Common event envelope fields">
+        <div><strong>event_id</strong><span>Stable identity and deduplication</span></div>
+        <div><strong>source_time</strong><span>When the source says it happened</span></div>
+        <div><strong>receive_time</strong><span>When this system observed it</span></div>
+        <div><strong>sequence</strong><span>Ordering and gap detection</span></div>
+        <div><strong>schema</strong><span>Meaning of the payload</span></div>
+        <div><strong>trace</strong><span>Episode and causal lineage</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="reference" aria-labelledby="reference-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">04 · Reference database</p>
+          <h2 id="reference-title">The versioned snapshot defines the world</h2>
+        </div>
+        <p>Reference data is not ambient lookup state. An engine begins from one immutable point-in-time snapshot that defines instruments, canonical events, mappings, fees, rules, and declared subscriptions.</p>
+      </div>
+
+      <div class="split">
+        <article class="feature-panel accent">
+          <p class="card-kicker">Loaded before start</p>
+          <h3>Reference snapshot</h3>
+          <p>The snapshot binds exchange identifiers to durable domain identity. That makes replay stable even after a symbol, mapping, fee, or resolution rule changes.</p>
+          <ul class="clean-list">
+            <li>Instrument and market definitions</li>
+            <li>Canonical event identity and relationships</li>
+            <li>Cross-venue and external-source mappings</li>
+            <li>Fees, tick sizes, lifecycle, and resolution rules</li>
+            <li>Declared feeds and engine subscription universe</li>
+          </ul>
+        </article>
+        <article class="feature-panel">
+          <p class="card-kicker">Point-in-time contract</p>
+          <h3>No invisible refresh</h3>
+          <p>A running engine never discovers that its world changed through a background database read. A new reference version arrives as a control event or starts a new engine session. The selected version remains part of every episode.</p>
+          <ul class="clean-list">
+            <li>Research can propose mappings; validation publishes them</li>
+            <li>Every artifact has effective time and provenance</li>
+            <li>Historical replay reloads the exact original version</li>
+            <li>Bad versions can be rejected or rolled back explicitly</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="state" aria-labelledby="state-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">05 · Deterministic state</p>
+          <h2 id="state-title">In memory can be stateful and replayable</h2>
+        </div>
+        <p>“Stateless” is the wrong goal for the hot path. The useful distinction is between fast working state and unique authoritative truth. Engines keep the former; versioned inputs and durable event histories keep the latter.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>State</th><th>Working owner</th><th>Authority</th><th>Hot-path access</th><th>Recovery</th></tr></thead>
+          <tbody>
+            <tr><td>Strategy calculations</td><td>Engine memory</td><td>Engine event history</td><td>Direct local memory</td><td>Snapshot plus feed replay</td></tr>
+            <tr><td>Strategy position view</td><td>Engine memory</td><td>Attributed account events</td><td>Direct local memory</td><td>Account-channel replay</td></tr>
+            <tr><td>Global positions and collateral</td><td>Position system</td><td>Reconciled account ledger</td><td>Published in-memory projection</td><td>Ledger replay plus venue reconciliation</td></tr>
+            <tr><td>Reference and symbology</td><td>Reference database</td><td>Versioned point-in-time snapshot</td><td>Loaded before engine start</td><td>Reload exact version</td></tr>
+            <tr><td>Risk reservations</td><td>Account risk and gateway</td><td>Authorized pending commitments</td><td>Direct gateway memory</td><td>Ledger and live-order reconciliation</td></tr>
+            <tr><td>Agent proposals and approvals</td><td>Durable workflow</td><td>Versioned control decision</td><td>Never queried by an engine</td><td>Workflow replay and recorded output</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="subhead">
+        <h3>Restart without losing the plot</h3>
+        <p>A snapshot makes recovery fast. Ordered feeds make it correct. Venue reconciliation makes it safe to resume writes.</p>
+      </div>
+      <div class="timeline" aria-label="Engine restart sequence">
+        <div class="flow-box"><small>1</small><strong>Load exact inputs</strong><span>Reference, config, session, code</span></div>
+        <div class="flow-box"><small>2</small><strong>Load snapshot</strong><span>Optional state and event watermark</span></div>
+        <div class="flow-box"><small>3</small><strong>Replay the tail</strong><span>Every channel after the watermark</span></div>
+        <div class="flow-box"><small>4</small><strong>Join live streams</strong><span>No sequence gap at the handoff</span></div>
+        <div class="flow-box"><small>5</small><strong>Reconcile account</strong><span>Orders and positions agree with venue</span></div>
+        <div class="flow-box"><small>6</small><strong>Open write gate</strong><span>Only after every required source is current</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="account" aria-labelledby="account-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">06 · Position, risk, execution</p>
+          <h2 id="account-title">Shared capital needs one account truth</h2>
+        </div>
+        <p>An engine may know its attributed position. It cannot protect against another engine’s working orders, shared collateral, correlated event exposure, or an uncertain write. Those facts converge at the account boundary.</p>
+      </div>
+
+      <div class="boundary-panel" aria-label="Account authority boundary">
+        <article class="boundary-block">
+          <small>Engines propose</small>
+          <h3>Trading intent</h3>
+          <p>Desired action, price, size, strategy identity, decision lineage, expiry, and the assumptions that made the intent valid.</p>
+          <code>intent = decide(
+  opportunity,
+  estimate,
+  local_state,
+  parameters
+)</code>
+        </article>
+        <article class="boundary-block">
+          <small>Account authority decides</small>
+          <h3>Risk and reservations</h3>
+          <p>The guard rechecks freshness, permissions, market state, self-trade, budget, collateral, working exposure, aggregate scenarios, and pending commitments. Approval creates a reservation before the write.</p>
+          <code>authorization = guard(
+  intent,
+  account_projection,
+  limits,
+  reservations
+)</code>
+        </article>
+        <article class="boundary-block">
+          <small>Gateway sends</small>
+          <h3>Idempotent mutation</h3>
+          <p>The gateway owns venue credentials, rate limits, request identity, retry discipline, uncertain outcomes, reconciliation, and the lifecycle events that return to the ledger.</p>
+          <code>result = execute(
+  authorized_intent,
+  idempotency_key
+)</code>
+        </article>
+      </div>
+      <p class="safety-note"><strong>Safety boundary:</strong> pricing, research, scanners, strategies, and agents can propose actions. They cannot send them. Every outward action passes the account-aware pre-trade guard immediately before the write.</p>
+
+      <div class="subhead">
+        <h3>Four lifecycles, one contract</h3>
+        <p>Ordinary orders, RFQ making, RFQ taking, and read-only measurement share normalized truth, deterministic decisions, account authorization, and episode capture.</p>
+      </div>
+      <div class="card-grid">
+        <article class="card"><p class="card-kicker">Resting maker</p><h3>Observe → quote → reconcile</h3><p>Book event, complete opportunity, desired quote state, allocated budget, final guard, idempotent change, mark-out.</p></article>
+        <article class="card"><p class="card-kicker">RFQ maker</p><h3>Price → reserve → confirm</h3><p>Request, fresh leg books, quote or pass, reserved loss, time-limited lifecycle, final recheck, attributed outcome.</p></article>
+        <article class="card"><p class="card-kicker">RFQ taker</p><h3>Probe → compare → accept</h3><p>Candidate bundle, deterministic eligibility, reserved budget, private quotes, all-in comparison, accept or pass, probe score.</p></article>
+        <article class="card"><p class="card-kicker">Shadow and replay</p><h3>Rebuild → simulate → score</h3><p>Point-in-time evidence, identical strategy, explicit fill model, observed outcome, candidate-versus-champion comparison.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="ai-trader" aria-labelledby="ai-trader-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">07 · AI trader</p>
+          <h2 id="ai-trader-title">Supervise the system, not the next packet</h2>
+        </div>
+        <p>The AI trader takes the role of a portfolio-level human trader: it sees the whole book, finds failures and opportunities, proposes changes, and directs experiments. It stays out of the first version of the latency-sensitive path and never bypasses risk.</p>
+      </div>
+
+      <div class="card-grid">
+        <article class="card"><p class="card-kicker">Fast · event driven</p><h3>Engine loop</h3><p>Receive event → update local projection → calculate decision → emit intent. No external query and no AI call.</p></article>
+        <article class="card"><p class="card-kicker">Immediate · account aware</p><h3>Risk and execution loop</h3><p>Receive intent → check aggregate account → reserve exposure → send idempotent mutation → publish result.</p></article>
+        <article class="card"><p class="card-kicker">Slow · supervisory</p><h3>AI trader loop</h3><p>Observe book and evals → propose models, parameters, allocations, hedges, or enablement → validate → publish a versioned control event.</p></article>
+      </div>
+    </section>
+
+    <div class="chapter" id="learning">
+      <div>
+        <p class="section-kicker">Option B · Learning system</p>
+        <h2>Build the system<br>around its evals.</h2>
+      </div>
+      <div class="chapter-number" aria-hidden="true">B</div>
+    </div>
+
+    <section class="section" aria-labelledby="eval-definition-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">08 · Eval definition</p>
+          <h2 id="eval-definition-title">Profit is an outcome, not a diagnosis</h2>
+        </div>
+        <p>An AI can only improve what the system can measure and explain. Complete episodes turn observed failures into reproducible tests. Fixed gates decide whether a proposed change survives outside the history that inspired it.</p>
+      </div>
+
+      <div class="definition">
+        <article class="definition-card">
+          <p class="card-kicker">Definition</p>
+          <h3>An eval is a repeatable test of a decision or system property.</h3>
+          <p>It runs on a defined set of replayable episodes, uses decision-time information only, produces a score and diagnosis, and has a threshold for better, worse, or inconclusive.</p>
+        </article>
+        <article class="definition-card">
+          <p class="card-kicker">Concrete question</p>
+          <h3>Did this quote use a fresh, correctly calculated fair value?</h3>
+          <p>Replay the request and each leg book as originally observed. Recompute with the production model. Check age, completeness, version, fees, and later mark-out. Attribute failure to data, pricing, or execution—not simply “bad trade.”</p>
+        </article>
+      </div>
+      <div class="eval-formula" aria-label="Parts of a useful evaluation">
+        <div><strong>Question</strong><span>The property we want to know</span></div>
+        <div><strong>Episode set</strong><span>Exactly which decisions are tested</span></div>
+        <div><strong>Truth</strong><span>The outcome or invariant used as evidence</span></div>
+        <div><strong>Scorer</strong><span>How evidence becomes a number</span></div>
+        <div><strong>Threshold</strong><span>Pass, fail, or inconclusive</span></div>
+        <div><strong>Attribution</strong><span>Which component should change</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing" aria-labelledby="pricing-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">09 · Pricing as a product</p>
+          <h2 id="pricing-title">The model and strategy answer different questions</h2>
+        </div>
+        <p>Keeping the contract explicit lets agents improve fair value without quietly changing trading policy—and improve policy without hiding a pricing error.</p>
+      </div>
+
+      <div class="boundary-panel" aria-label="Pricing model and strategy boundary">
+        <article class="boundary-block">
+          <small>Pricing model</small>
+          <h3>What is it worth?</h3>
+          <p>Consumes market observations, reference data, external features, and a pinned model version. It does not know the desired profit and does not decide to trade.</p>
+          <code>price(inputs, model_version)
+→ fair_value
+→ uncertainty
+→ as_of</code>
+        </article>
+        <article class="boundary-block">
+          <small>Versioned estimate</small>
+          <h3>A replayable contract</h3>
+          <p>The result says what was believed, how certain it was, which evidence it used, and when that evidence was current.</p>
+          <code>{ fair: 0.347,
+  uncertainty: 0.006,
+  as_of: "decision time",
+  model: "v17" }</code>
+        </article>
+        <article class="boundary-block">
+          <small>Strategy</small>
+          <h3>Should we act?</h3>
+          <p>Combines the estimate with available prices, fees, risk budgets, inventory, and opportunity rules to produce no action or a trading intent.</p>
+          <code>decide(estimate,
+  opportunity, fees,
+  risk, parameters)
+→ no_action | intent</code>
+        </article>
+      </div>
+      <p class="model-note"><strong>Two replay-safe deployments:</strong> publish estimates as a versioned pricing feed, or run a pinned model component inside each engine. The feed favors sharing and independent scaling. The in-process component favors lower latency. Both must record exact inputs, output, model version, and timestamp.</p>
+
+      <div class="subhead">
+        <h3>The AI model-builder loop</h3>
+        <p>A pricing candidate earns publication through calibration and downstream decision value across unseen periods—not because one backtest became more profitable.</p>
+      </div>
+      <div class="pricing-flow" aria-label="Pricing model improvement workflow">
+        <div class="flow-box"><small>1 · Hypothesize</small><strong>Explain an error</strong><span>Name a calibration failure or missing relationship</span></div>
+        <div class="flow-box"><small>2 · Build</small><strong>Features &amp; model</strong><span>Use decision-time data with lineage and freshness rules</span></div>
+        <div class="flow-box"><small>3 · Fit</small><strong>Development periods</strong><span>Do not touch the sealed temporal holdout</span></div>
+        <div class="flow-box"><small>4 · Prove</small><strong>Calibration + backtest</strong><span>Accuracy, robustness, costs, downstream value</span></div>
+        <div class="flow-box"><small>5 · Shadow</small><strong>Current flow</strong><span>Emit beside the champion without affecting decisions</span></div>
+        <div class="flow-box"><small>6 · Publish</small><strong>Immutable version</strong><span>Artifact, features, lineage, eval report, rollback</span></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="learning-loop-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">10 · Learning loop</p>
+          <h2 id="learning-loop-title">Agents propose. Evidence promotes.</h2>
+        </div>
+        <p>Production and replay emit the same episode shape. Evaluators convert episodes into evidence. Agents use that evidence to propose candidates, but fixed gates—not agent confidence—control promotion.</p>
+      </div>
+
+      <figure class="mermaid-figure" aria-labelledby="eval-diagram-title eval-diagram-caption">
+        <figcaption>
+          <strong id="eval-diagram-title">AI evaluation and promotion flow</strong>
+          <span id="eval-diagram-caption">Complete episodes become diagnoses and falsifiable proposals. Unseen evidence, shadow traffic, and governed promotion protect the current champion.</span>
+        </figcaption>
+        <pre class="mermaid" role="img" aria-label="Flow diagram of the AI evaluation loop from trade episodes through evaluators, failure diagnosis, an agent proposal, replay, sealed holdout, live shadow, governed promotion or rollback, and a new version feeding back into replayable engines.">
+flowchart LR
+  accTitle: AI evaluation and promotion flow
+  accDescr: Complete trade episodes feed deterministic evaluators and failure diagnosis. An agent proposes a candidate, which passes through replay, a sealed temporal holdout, live shadow evaluation, and a governed promotion or rollback decision before a new version can reach replayable engines.
+  EPISODES["Complete trade<br/>episodes"]
+  EVALS["Deterministic<br/>evaluators"]
+  DIAGNOSIS["Failure diagnosis<br/>and attribution"]
+  AGENT["Agent candidate<br/>proposal"]
+  REPLAY["Replay +<br/>backtest"]
+  HOLDOUT["Sealed temporal<br/>holdout"]
+  SHADOW["Live shadow<br/>no writes"]
+  DECISION{"Governed<br/>decision"}
+  VERSION["New model, config,<br/>code, or data rule"]
+  CHAMPION["Keep or restore<br/>current champion"]
+  ENGINES["Replayable<br/>engines"]
+
+  EPISODES --> EVALS --> DIAGNOSIS --> AGENT --> REPLAY --> HOLDOUT --> SHADOW --> DECISION
+  DECISION -->|promote| VERSION --> ENGINES --> EPISODES
+  DECISION -->|reject| CHAMPION
+  ENGINES -->|regression| CHAMPION
+  CHAMPION -. new evidence .-> EPISODES
+
+  classDef evidence fill:#10253a,stroke:#74c9ff,color:#edf8f1;
+  classDef judge fill:#2a2313,stroke:#f1c66f,color:#edf8f1;
+  classDef agent fill:#102b20,stroke:#5feb98,color:#edf8f1;
+  classDef govern fill:#2d1716,stroke:#ff9388,color:#edf8f1;
+  class EPISODES,ENGINES evidence;
+  class EVALS,HOLDOUT,SHADOW,REPLAY judge;
+  class DIAGNOSIS,AGENT,VERSION agent;
+  class DECISION,CHAMPION govern;
+        </pre>
+      </figure>
+
+      <div class="loop-frame" aria-label="Evaluation-driven improvement loop">
+        <div class="loop-band">
+          <div class="loop-label">Observe</div>
+          <div class="flow-row">
+            <div class="flow-box"><small>Live or replay</small><strong>Engine run</strong><span>Exact code, reference, configuration, ordered feeds</span></div>
+            <div class="flow-box"><small>Causal record</small><strong>Trade episode</strong><span>What arrived, what we knew, what we decided</span></div>
+            <div class="flow-box"><small>Deterministic</small><strong>Evaluators</strong><span>Invariants, scorers, mark-outs, calibration</span></div>
+            <div class="flow-box"><small>Queryable</small><strong>Eval warehouse</strong><span>Scores, slices, failures, uncertainty, lineage</span></div>
+          </div>
+        </div>
+        <div class="loop-band">
+          <div class="loop-label">Improve</div>
+          <div class="flow-row">
+            <div class="flow-box"><small>Find</small><strong>AI investigator</strong><span>Cluster failures and trace causes</span></div>
+            <div class="flow-box"><small>One change</small><strong>Candidate</strong><span>Code, parameter, data, model, or risk rule</span></div>
+            <div class="flow-box"><small>Fair contest</small><strong>Replay</strong><span>Champion and challenger get identical inputs</span></div>
+            <div class="flow-box"><small>Unseen present</small><strong>Shadow</strong><span>Current flow, no writes, fixed scores</span></div>
+            <div class="flow-box"><small>Bounded</small><strong>Canary</strong><span>Small exposure and automatic rollback</span></div>
+            <div class="flow-box"><small>Versioned</small><strong>Promote or reject</strong><span>Evidence, owner, and rollback stay durable</span></div>
+          </div>
+        </div>
+        <div class="feedback-band">
+          <div class="feedback-step"><strong>1 · Detect</strong><span>A score regresses, an invariant breaks, or an opportunity appears.</span></div>
+          <div class="feedback-step"><strong>2 · Explain</strong><span>Replay narrows the cause to data, model, decision, execution, or operations.</span></div>
+          <div class="feedback-step"><strong>3 · Improve</strong><span>An agent proposes a small change and a falsifiable expectation.</span></div>
+          <div class="feedback-step"><strong>4 · Prove</strong><span>Holdouts, shadow traffic, and bounded live evidence decide.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="eval-tree" aria-labelledby="eval-tree-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">11 · Eval tree</p>
+          <h2 id="eval-tree-title">Measure causes before outcomes</h2>
+        </div>
+        <p>Net profit is the north-star outcome. Leading evals explain why it moved and point to something that can improve. Hard safety and correctness gates outrank economic gains.</p>
+      </div>
+
+      <div class="tree-root">
+        <small>North-star outcome</small>
+        <strong>Durable net profit at controlled risk and useful capacity</strong>
+        <span>After fees, adverse selection, capital use, uncertainty, and operational losses—not on one lucky sample.</span>
+      </div>
+      <div class="metric-grid">
+        <article class="metric"><span class="number">01</span><h3>Safety</h3><p>Can the candidate violate a hard boundary or mutate the wrong account?</p><div class="chips"><span>max loss</span><span>kill switch</span><span>write authority</span><span>duplicates</span></div></article>
+        <article class="metric"><span class="number">02</span><h3>Correctness &amp; replay</h3><p>Do identical versions and ordered inputs reproduce identical state and intent?</p><div class="chips"><span>intent equality</span><span>state checksum</span><span>sequence gaps</span><span>recovery parity</span></div></article>
+        <article class="metric"><span class="number">03</span><h3>Data quality</h3><p>Was the decision based on complete, current, correctly mapped information?</p><div class="chips"><span>feed age</span><span>missing legs</span><span>crossed books</span><span>mapping coverage</span></div></article>
+        <article class="metric"><span class="number">04</span><h3>Latency</h3><p>Where did time go from the source event to venue acknowledgement?</p><div class="chips"><span>receive lag</span><span>engine time</span><span>risk time</span><span>wire time</span><span>p99</span></div></article>
+        <article class="metric"><span class="number">05</span><h3>Pricing &amp; calibration</h3><p>Did probabilities match outcomes, and did the model know its uncertainty?</p><div class="chips"><span>Brier score</span><span>log loss</span><span>calibration</span><span>mark-out</span><span>coverage</span></div></article>
+        <article class="metric"><span class="number">06</span><h3>Execution</h3><p>Did good intents become good trades at the expected price and size?</p><div class="chips"><span>fill rate</span><span>slippage</span><span>rejects</span><span>queue loss</span><span>cancel lag</span></div></article>
+        <article class="metric"><span class="number">07</span><h3>Economics &amp; capacity</h3><p>Does edge survive costs and scale beyond a few tiny opportunities?</p><div class="chips"><span>net edge</span><span>profit/hour</span><span>capital turn</span><span>eligible flow</span><span>decay</span></div></article>
+        <article class="metric"><span class="number">08</span><h3>Risk</h3><p>Which losses are expected variance, and which reveal concentration or model failure?</p><div class="chips"><span>drawdown</span><span>tail loss</span><span>event exposure</span><span>stress loss</span><span>collateral</span></div></article>
+        <article class="metric"><span class="number">09</span><h3>Operational learning</h3><p>How fast can a failure become a reproduced cause and verified fix?</p><div class="chips"><span>time to detect</span><span>time to replay</span><span>root-cause rate</span><span>escape rate</span></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="episodes" aria-labelledby="episodes-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">12 · Unit of learning</p>
+          <h2 id="episodes-title">The complete trade episode</h2>
+        </div>
+        <p>A feed tells us what happened. An episode adds the causal spine needed to answer why: inputs, versions, decision, authorization, venue response, and later outcome joined under one identity.</p>
+      </div>
+
+      <div class="timeline episode" aria-label="Trade episode timeline">
+        <div class="flow-box"><small>1 · Opportunity</small><strong>What arrived?</strong><span>Trigger, raw references, normalized event, source and receive times</span></div>
+        <div class="flow-box"><small>2 · Context</small><strong>What was known?</strong><span>Books, reference version, prices, parameters, positions, code</span></div>
+        <div class="flow-box"><small>3 · Decision</small><strong>Why this action?</strong><span>Fair value, uncertainty, alternatives, rejection reasons, price, size</span></div>
+        <div class="flow-box"><small>4 · Authorization</small><strong>Was it allowed?</strong><span>Account risk, reservations, permissions, idempotency</span></div>
+        <div class="flow-box"><small>5 · Execution</small><strong>What happened?</strong><span>Acks, fills, rejects, cancels, latency, attribution</span></div>
+        <div class="flow-box"><small>6 · Afterlife</small><strong>Was it good?</strong><span>Mark-outs, hedge cost, settlement, realized profit, capital duration</span></div>
+      </div>
+
+      <div class="subhead">
+        <h3>Failure taxonomy</h3>
+        <p>“Lost money” is not a diagnosis. Every failed eval should land in a specific bucket with evidence, an owner, and the next experiment.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Failure class</th><th>Question</th><th>Evidence in the episode</th><th>Likely owner</th></tr></thead>
+          <tbody>
+            <tr><td>Opportunity miss</td><td>Did the system ignore a trade it should have considered?</td><td>Universe, filters, no-action reason, later executable price</td><td>Strategy investigator</td></tr>
+            <tr><td>Data failure</td><td>Were inputs stale, missing, duplicated, misordered, or mapped incorrectly?</td><td>Sequence, timestamps, raw payloads, normalized values, reference version</td><td>Data agent</td></tr>
+            <tr><td>Model failure</td><td>Was fair value or uncertainty systematically wrong?</td><td>Decision-time features, decomposition, calibration, outcomes, sensitivity</td><td>Pricing agent</td></tr>
+            <tr><td>Decision failure</td><td>Did correct inputs and values produce a poor action?</td><td>Alternatives, gates, thresholds, size, rejection reason, counterfactual</td><td>Strategy agent</td></tr>
+            <tr><td>Risk failure</td><td>Was the action individually or collectively unsafe?</td><td>Exposure, reservations, limit versions, stress results</td><td>Risk agent</td></tr>
+            <tr><td>Execution failure</td><td>Did a sound intent lose value before becoming a fill?</td><td>Component latency, venue messages, movement, queue, slippage</td><td>Execution agent</td></tr>
+            <tr><td>Expected variance</td><td>Was this a good decision with a bad outcome?</td><td>Calibrated probability, expected distribution, comparable episodes</td><td>Independent evaluator</td></tr>
+            <tr><td>Operational failure</td><td>Did deployment, recovery, ownership, or observability break?</td><td>Health, leases, restarts, gaps, reconciliation</td><td>Platform agent</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="promotion" aria-labelledby="promotion-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">13 · Anti-overfit promotion</p>
+          <h2 id="promotion-title">Design against gaming the score</h2>
+        </div>
+        <p>An agent will exploit any metric—including flaws in the simulator. These are architectural constraints, not research etiquette.</p>
+      </div>
+
+      <div class="guardrails">
+        <article class="guardrail"><h3>Freeze the eval first</h3><p>Define slices, scores, thresholds, and exclusions before the candidate. A rejection cannot rewrite its test.</p></article>
+        <article class="guardrail"><h3>Seal temporal holdouts</h3><p>Agents inspect development periods. Final evaluation uses later periods they have never seen.</p></article>
+        <article class="guardrail"><h3>Use decision-time inputs</h3><p>Later outcomes score a decision. They never leak into what the decision could know.</p></article>
+        <article class="guardrail"><h3>Label modeled truth</h3><p>Decision replay can be exact. Counterfactual fills are simulated and must include sensitivity analysis.</p></article>
+        <article class="guardrail"><h3>Require robustness</h3><p>Nearby parameters, other periods, market families, and plausible costs should preserve the result.</p></article>
+        <article class="guardrail"><h3>Charge for search</h3><p>Track every candidate. Confidence falls when many variants mine the same history for one winner.</p></article>
+        <article class="guardrail"><h3>Test scale and overlap</h3><p>Include size, fees, impact, shared legs, concentration, and capital duration—not five profitable dollars.</p></article>
+        <article class="guardrail"><h3>Separate maker and judge</h3><p>No agent both proposes a change and controls the sealed evidence or promotion decision.</p></article>
+      </div>
+
+      <div class="subhead">
+        <h3>The promotion ladder</h3>
+        <p>Every stage can reject. Live stages have bounded authority, preset rollback conditions, and a durable return path to the current champion.</p>
+      </div>
+      <div class="promotion" aria-label="Candidate promotion stages">
+        <div class="stage"><small>1</small><strong>Regression</strong><span>Safety, correctness, replay, invariants</span></div>
+        <div class="stage"><small>2</small><strong>Development replay</strong><span>Diagnose and iterate on visible history</span></div>
+        <div class="stage"><small>3</small><strong>Sealed holdout</strong><span>Unseen temporal evidence and fixed scores</span></div>
+        <div class="stage"><small>4</small><strong>Live shadow</strong><span>Current flow with no venue writes</span></div>
+        <div class="stage"><small>5</small><strong>Bounded canary</strong><span>Small exposure, guardrails, auto rollback</span></div>
+        <div class="stage"><small>6</small><strong>Production</strong><span>Versioned champion with monitored rollback</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="agents" aria-labelledby="agents-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">14 · Agent organization</p>
+          <h2 id="agents-title">A trading desk made of bounded roles</h2>
+        </div>
+        <p>Different agents optimize different eval families. Research roles do not receive execution authority, and an independent role challenges each candidate.</p>
+      </div>
+
+      <div class="agent-grid">
+        <article class="agent-card"><small>Research desk</small><h3>Strategy investigator</h3><p>Finds opportunity and failure clusters, proposes hypotheses, and predicts score movement before implementation.</p><span class="permission">May propose · cannot promote or trade</span></article>
+        <article class="agent-card"><small>Pricing desk</small><h3>Model and data agent</h3><p>Improves mappings, features, calibration, dependency estimates, and uncertainty measurement.</p><span class="permission">May build · cannot alter holdouts</span></article>
+        <article class="agent-card"><small>Execution desk</small><h3>Performance agent</h3><p>Profiles source-to-ack latency and improves throughput while preserving replay and economic behavior.</p><span class="permission">May optimize · must preserve parity</span></article>
+        <article class="agent-card"><small>Portfolio desk</small><h3>AI trader</h3><p>Prioritizes experiments, allocates capital, proposes enablement and hedges, and weighs competing metrics.</p><span class="permission">May propose controls · risk remains binding</span></article>
+        <article class="agent-card"><small>Independent judge</small><h3>Evaluator and red team</h3><p>Runs sealed suites, challenges attribution, searches for leakage and simulator exploits, and can veto.</p><span class="permission">May veto · cannot modify candidate</span></article>
+        <article class="agent-card"><small>Control plane</small><h3>Release steward</h3><p>Verifies evidence, stages shadow and canary runs, watches rollback metrics, and preserves the champion.</p><span class="permission">Only governed workflows may promote</span></article>
+      </div>
+
+      <div class="subhead">
+        <h3>Every proposal must be falsifiable</h3>
+        <p>The contract names one change, its expected effect, the slice that should move, what must not regress, and what evidence can support promotion.</p>
+      </div>
+      <div class="code-pair">
+        <article class="code-card">
+          <pre>candidate:
+  change: refresh every leg at decision time
+  target_eval: pricing.fresh_book_markout
+  expected: fewer false-cheap classifications
+  primary_slice: stale_book_age
+  must_not_regress:
+    - decision_latency_p99
+    - missing_leg_rate
+    - deterministic_replay</pre>
+          <p>The hypothesis predicts a narrow, attributable effect and declares its protected metrics before implementation.</p>
+        </article>
+        <article class="code-card">
+          <pre>decision:
+  result: promote | reject | inconclusive
+  evidence:
+    development: visible
+    holdout: sealed until scoring
+    shadow: current live inputs
+  uncertainty: confidence interval
+  known_limits: fill counterfactual is modeled
+  rollback_to: previous version
+  lineage: code + config + data + scorer</pre>
+          <p>The result keeps its evidence and lineage so a later evaluator can reproduce the claim instead of trusting a summary.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="synthesis-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">15 · Synthesis</p>
+          <h2 id="synthesis-title">Two options, one architecture</h2>
+        </div>
+        <p>The options are complementary. Replayability creates a trustworthy experimental subject. Evals create its fitness functions, laboratory, and promotion discipline.</p>
+      </div>
+
+      <div class="synthesis">
+        <article class="synthesis-card"><small>Option A</small><h3>Make causes inspectable</h3><p>Fixed startup inputs and ordered channels reconstruct the state, pricing estimate, decision, authorization, and intent that existed at any moment.</p></article>
+        <div class="plus" aria-hidden="true">+</div>
+        <article class="synthesis-card"><small>Option B</small><h3>Turn inspection into improvement</h3><p>Episodes, scorers, specialized agents, sealed evidence, shadow runs, and promotion gates convert observed failures into safe, cumulative progress.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="decisions" aria-labelledby="decisions-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">16 · Decisions</p>
+          <h2 id="decisions-title">Commit the invariants; debate the mechanisms</h2>
+        </div>
+        <p>Accepted decisions define the design. Strong leanings need challenge. Open items are explicit questions, not hidden assumptions.</p>
+      </div>
+
+      <div class="decision-grid">
+        <article class="decision"><span class="status accepted">Accepted</span><h3>Deterministic engine contract</h3><p>Fixed startup inputs and ordered events produce replayable state and trading intents.</p></article>
+        <article class="decision"><span class="status accepted">Accepted</span><h3>Central write authority</h3><p>Strategies and agents never receive venue credentials. The gateway owns every mutation.</p></article>
+        <article class="decision"><span class="status accepted">Accepted</span><h3>Point-in-time evidence</h3><p>The system can reproduce what was knowable and which exact versions produced a decision.</p></article>
+        <article class="decision"><span class="status accepted">Accepted</span><h3>Pricing as a versioned product</h3><p>Models emit fair value, uncertainty, lineage, and as-of time independently of trading policy.</p></article>
+        <article class="decision"><span class="status accepted">Accepted</span><h3>Evals as a system component</h3><p>Episodes, scorers, and promotion gates belong beside feeds, risk, and execution—not under dashboards.</p></article>
+        <article class="decision"><span class="status leaning">Strong leaning</span><h3>Canonical event graph</h3><p>Underlying events, not venue symbols, define identity, dependency, exposure, and cross-venue mapping.</p></article>
+        <article class="decision"><span class="status leaning">Strong leaning</span><h3>AI outside the initial hot path</h3><p>Agents propose relationships, models, controls, and experiments. Deterministic artifacts drive live decisions.</p></article>
+        <article class="decision"><span class="status leaning">Strong leaning</span><h3>Shared account gateway</h3><p>One account-aware service coordinates collateral, positions, self-trade prevention, limits, and recovery.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Engine isolation unit</h3><p>Choose among strategy, parameter set, market group, subaccount, or a deliberate combination.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Channel ordering</h3><p>Define promises per instrument, account, and engine, including snapshot-to-live handoffs.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Position feedback</h3><p>Decide whether engines receive raw account events, attributed projections, or both.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Snapshot ownership</h3><p>Choose engine checkpoints, a shared service, or full rebuilds until measured scale requires snapshots.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Account-risk allocation</h3><p>Compare hard capital partitions, shared collateral with reservations, and subaccounts.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Pricing deployment</h3><p>Choose shared estimate feeds, pinned in-process models, or different answers by latency class.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Agent approval policy</h3><p>Parameters, enablement, hedges, capital moves, and promotion may need different approval levels.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Process and transport boundaries</h3><p>Let measured latency, replay, durability, and team needs determine when components split.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Portfolio objective</h3><p>Balance expected return, uncertainty, liquidity, duration, overlap, capacity, and drawdown.</p></article>
+        <article class="decision"><span class="status open">Open</span><h3>Promotion thresholds</h3><p>Specify the evidence, uncertainty, canary budget, approval, and rollback policy for each artifact class.</p></article>
+      </div>
+
+      <div class="subhead">
+        <h3>A staged evolution path</h3>
+        <p>The north star does not require a rewrite. Each phase closes a measurable loop and leaves the system in a more trustworthy state.</p>
+      </div>
+      <div class="roadmap">
+        <article class="phase"><span class="number">01</span><h3>Make evidence durable</h3><p>Unify event capture, fresh snapshots, attribution, settlement, and replay.</p><strong>Trusted episodes</strong></article>
+        <article class="phase"><span class="number">02</span><h3>Build canonical truth</h3><p>Add the event graph, reference versions, fee truth, and relationship models.</p><strong>One market language</strong></article>
+        <article class="phase"><span class="number">03</span><h3>Standardize decisions</h3><p>Use one engine contract across live, shadow, replay, and RFQ lifecycles.</p><strong>Comparable strategies</strong></article>
+        <article class="phase"><span class="number">04</span><h3>Centralize account control</h3><p>Add aggregate positions, collateral, reservations, budgets, and scenario risk.</p><strong>Safe shared capital</strong></article>
+        <article class="phase"><span class="number">05</span><h3>Close the eval loop</h3><p>Give agents fixed evals, sealed evidence, shadow runs, canaries, and rollback.</p><strong>Governed improvement</strong></article>
+      </div>
+    </section>
+
+    <footer>
+      <span>Working architecture · public discussion draft</span>
+      <span>Replayable engines × external account truth × eval-driven learning</span>
+    </footer>
+  </main>
+  <noscript><p class="shell safety-note">The diagrams are shown as text because JavaScript is unavailable.</p></noscript>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: "strict",
+      theme: "base",
+      flowchart: { curve: "basis", htmlLabels: true, useMaxWidth: true },
+      themeVariables: {
+        background: "#07110d",
+        primaryColor: "#10231b",
+        primaryTextColor: "#edf8f1",
+        primaryBorderColor: "#5feb98",
+        lineColor: "#527360",
+        secondaryColor: "#10253a",
+        tertiaryColor: "#2a2313",
+        clusterBkg: "#0b1913",
+        clusterBorder: "#234334",
+        edgeLabelBackground: "#07110d",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        fontSize: "13px"
+      }
+    });
+  </script>
+</body>
+</html>

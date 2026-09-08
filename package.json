@@ -13,7 +13,7 @@
   },
   "scripts": {
     "quartz": "./quartz/bootstrap-cli.mjs",
-    "build": "./quartz/bootstrap-cli.mjs build",
+    "build": "./quartz/bootstrap-cli.mjs build && node scripts/copy-standalone.mjs",
     "dev": "./quartz/bootstrap-cli.mjs build --serve",
     "check": "tsc --noEmit && npx prettier . --check",
     "format": "npx prettier . --write",
