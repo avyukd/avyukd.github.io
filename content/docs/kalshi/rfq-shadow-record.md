@@ -7,7 +7,7 @@ tags:
   - trading
 ---
 
-**Last updated 2026-09-26 20:02 UTC. This page rebuilds itself every hour.**
+**Last updated 2026-09-26 21:02 UTC. This page rebuilds itself every hour.**
 
 A recorder watches Kalshi's parlay request feed continuously and writes to a
 local store. Once an hour that store is re-read, the charts below are redrawn,
@@ -60,14 +60,14 @@ the request appears and again after it closes, and an increase means it filled.
 
 | | |
 | --- | ---: |
-| Requests seen | 484,567 |
-| Closed (no longer accepting bids) | 484,062 |
-| Followed through their full lifecycle | 483,126 |
-| Confirmed executed | 146,449 |
+| Requests seen | 485,512 |
+| Closed (no longer accepting bids) | 485,083 |
+| Followed through their full lifecycle | 484,220 |
+| Confirmed executed | 146,716 |
 | Earliest request | 2026-09-07 17:41:26 |
-| Most recent request | 2026-09-26 20:00:57 |
+| Most recent request | 2026-09-26 20:58:36 |
 | Median edge to the seller | +0.46 cents per contract |
-| Total edge on executed requests | $128,562.93 |
+| Total edge on executed requests | $128,836.96 |
 
 ## How many bets are bundled together
 
@@ -76,28 +76,28 @@ three-leg parlay.
 
 <svg viewBox="0 0 680 230" role="img" aria-label="number of requests, by how many legs the parlay had" style="width:100%;height:auto;max-width:680px">
 <line x1="54" y1="14.0" x2="668" y2="14.0" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="17.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">78780</text>
+<text x="47" y="17.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">78928</text>
 <line x1="54" y1="59.5" x2="668" y2="59.5" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="63.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">59085</text>
+<text x="47" y="63.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">59196</text>
 <line x1="54" y1="105.0" x2="668" y2="105.0" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="108.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">39390</text>
+<text x="47" y="108.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">39464</text>
 <line x1="54" y1="150.5" x2="668" y2="150.5" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="154.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">19695</text>
+<text x="47" y="154.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">19732</text>
 <line x1="54" y1="196.0" x2="668" y2="196.0" stroke="var(--lightgray)" stroke-width="1"/>
 <text x="47" y="199.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">0</text>
 <rect x="58.6" y="195.9" width="21.5" height="0.6" fill="var(--secondary)" rx="2"/>
 <text x="69.4" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">0</text>
 <rect x="89.3" y="14.0" width="21.5" height="182.0" fill="var(--secondary)" rx="2"/>
 <text x="100.1" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">2</text>
-<rect x="120.0" y="57.5" width="21.5" height="138.5" fill="var(--secondary)" rx="2"/>
+<rect x="120.0" y="57.6" width="21.5" height="138.4" fill="var(--secondary)" rx="2"/>
 <text x="130.8" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">3</text>
 <rect x="150.7" y="75.9" width="21.5" height="120.1" fill="var(--secondary)" rx="2"/>
 <text x="161.4" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">4</text>
 <rect x="181.4" y="95.3" width="21.5" height="100.7" fill="var(--secondary)" rx="2"/>
 <text x="192.2" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">5</text>
-<rect x="212.1" y="104.1" width="21.5" height="91.9" fill="var(--secondary)" rx="2"/>
+<rect x="212.1" y="104.0" width="21.5" height="92.0" fill="var(--secondary)" rx="2"/>
 <text x="222.8" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">6</text>
-<rect x="242.8" y="125.3" width="21.5" height="70.7" fill="var(--secondary)" rx="2"/>
+<rect x="242.8" y="125.2" width="21.5" height="70.8" fill="var(--secondary)" rx="2"/>
 <text x="253.5" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">7</text>
 <rect x="273.5" y="134.0" width="21.5" height="62.0" fill="var(--secondary)" rx="2"/>
 <text x="284.2" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">8</text>
@@ -139,26 +139,26 @@ sport, which is common: a baseball game stapled to a college football spread.
 
 <svg viewBox="0 0 680 230" role="img" aria-label="number of requests by sport" style="width:100%;height:auto;max-width:680px">
 <line x1="54" y1="14.0" x2="668" y2="14.0" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="17.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">134976</text>
+<text x="47" y="17.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">135177</text>
 <line x1="54" y1="59.5" x2="668" y2="59.5" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="63.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">101232</text>
+<text x="47" y="63.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">101383</text>
 <line x1="54" y1="105.0" x2="668" y2="105.0" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="108.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">67488</text>
+<text x="47" y="108.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">67588</text>
 <line x1="54" y1="150.5" x2="668" y2="150.5" stroke="var(--lightgray)" stroke-width="1"/>
-<text x="47" y="154.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">33744</text>
+<text x="47" y="154.0" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">33794</text>
 <line x1="54" y1="196.0" x2="668" y2="196.0" stroke="var(--lightgray)" stroke-width="1"/>
 <text x="47" y="199.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">0</text>
 <rect x="61.7" y="14.0" width="35.8" height="182.0" fill="var(--secondary)" rx="2"/>
 <text x="79.6" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">mixed</text>
-<rect x="112.8" y="75.5" width="35.8" height="120.5" fill="var(--secondary)" rx="2"/>
+<rect x="112.8" y="75.6" width="35.8" height="120.4" fill="var(--secondary)" rx="2"/>
 <text x="130.8" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">nfl</text>
 <rect x="164.0" y="85.1" width="35.8" height="110.9" fill="var(--secondary)" rx="2"/>
 <text x="181.9" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">mlb</text>
-<rect x="215.2" y="116.7" width="35.8" height="79.3" fill="var(--secondary)" rx="2"/>
+<rect x="215.2" y="116.5" width="35.8" height="79.5" fill="var(--secondary)" rx="2"/>
 <text x="233.1" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">other</text>
-<rect x="266.3" y="128.7" width="35.8" height="67.3" fill="var(--secondary)" rx="2"/>
+<rect x="266.3" y="128.8" width="35.8" height="67.2" fill="var(--secondary)" rx="2"/>
 <text x="284.2" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">soccer</text>
-<rect x="317.5" y="155.9" width="35.8" height="40.1" fill="var(--secondary)" rx="2"/>
+<rect x="317.5" y="155.5" width="35.8" height="40.5" fill="var(--secondary)" rx="2"/>
 <text x="335.4" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">ncaaf</text>
 <rect x="368.7" y="156.6" width="35.8" height="39.4" fill="var(--secondary)" rx="2"/>
 <text x="386.6" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">tennis</text>
@@ -193,13 +193,13 @@ A value of 0.10 means the bundle is worth about 10 cents to win $1.
 <text x="47" y="199.5" text-anchor="end" font-size="9" font-family="monospace" fill="var(--gray)">0.00</text>
 <rect x="61.1" y="14.0" width="33.1" height="182.0" fill="var(--secondary)" rx="2"/>
 <text x="77.6" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">2</text>
-<rect x="108.3" y="77.2" width="33.1" height="118.8" fill="var(--secondary)" rx="2"/>
+<rect x="108.3" y="77.1" width="33.1" height="118.9" fill="var(--secondary)" rx="2"/>
 <text x="124.8" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">3</text>
 <rect x="155.5" y="115.7" width="33.1" height="80.3" fill="var(--secondary)" rx="2"/>
 <text x="172.1" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">4</text>
 <rect x="202.8" y="141.9" width="33.1" height="54.1" fill="var(--secondary)" rx="2"/>
 <text x="219.3" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">5</text>
-<rect x="250.0" y="159.7" width="33.1" height="36.3" fill="var(--secondary)" rx="2"/>
+<rect x="250.0" y="159.8" width="33.1" height="36.2" fill="var(--secondary)" rx="2"/>
 <text x="266.5" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">6</text>
 <rect x="297.2" y="170.5" width="33.1" height="25.5" fill="var(--secondary)" rx="2"/>
 <text x="313.8" y="209" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">7</text>
@@ -24816,6 +24816,7 @@ collected the difference.
 <circle cx="77.4" cy="141.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="92.7" cy="141.2" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="92.7" cy="144.3" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="108.1" cy="141.8" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="266.7" cy="141.6" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="72.2" cy="141.4" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="72.2" cy="141.3" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
@@ -24829,6 +24830,40 @@ collected the difference.
 <circle cx="72.2" cy="133.4" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="67.1" cy="140.6" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <circle cx="77.4" cy="142.8" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="92.7" cy="141.9" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="108.1" cy="141.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="62.0" cy="139.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="72.2" cy="138.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="282.1" cy="135.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="123.4" cy="141.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="140.8" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="62.0" cy="149.9" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="140.9" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="136.1" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="163.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="140.2" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="140.4" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="136.0" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="128.5" cy="138.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="142.4" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="62.0" cy="141.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="84.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="82.5" cy="132.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="145.9" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="82.5" cy="142.1" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="72.2" cy="139.8" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="72.2" cy="130.2" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="139.2" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="113.2" cy="134.1" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="140.6" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="102.9" cy="134.1" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="67.1" cy="135.3" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="72.2" cy="140.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="82.5" cy="76.0" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="92.7" cy="140.5" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="62.0" cy="140.9" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="77.4" cy="134.7" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
+<circle cx="123.4" cy="141.6" r="4" fill="var(--secondary)" stroke="var(--secondary)" stroke-width="1.5" opacity="0.85"/>
 <line x1="62" y1="244" x2="666" y2="244" stroke="var(--gray)" stroke-width="1"/>
 <text x="62.0" y="258" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">2</text>
 <text x="213.0" y="258" text-anchor="middle" font-size="9" font-family="monospace" fill="var(--gray)">32</text>
@@ -24847,15 +24882,15 @@ risking about $50 to win $500.
 
 | | requests | median | largest |
 | --- | ---: | ---: | ---: |
-| Payout if it wins | 153547 | $308 | $471,000 |
-| Amount staked | 331021 | $10.00 | $50,070.00 |
+| Payout if it wins | 153906 | $308 | $471,000 |
+| Amount staked | 331606 | $10.00 | $50,070.00 |
 
 These are small. A median payout in the hundreds of dollars is recreational
 betting, not institutional flow.
 
 ## Bundles whose legs are related
 
-**52,578** of 484,567 requests have two or more legs on the same game.
+**52,615** of 485,512 requests have two or more legs on the same game.
 
 This is the known weak point in the fair value above. Two bets on the same game
 are not independent: if a team is winning, several legs move together. Real odds
